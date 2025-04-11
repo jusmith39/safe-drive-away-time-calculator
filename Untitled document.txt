@@ -1,0 +1,149 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Safe Drive-Away Time Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      background-color: #f4f4f4;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+    }
+    label, select, input {
+      display: block;
+      margin: 1rem 0 0.5rem;
+    }
+    .results {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .weather-toggle {
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Safe Drive-Away Time Calculator</h1>
+
+
+  <form id="calcForm">
+    <label for="adhesive">Select Urethane Adhesive:</label>
+    <select id="adhesive" required></select>
+
+
+    <div class="weather-toggle">
+      <input type="checkbox" id="useLocation" />
+      <label for="useLocation">Use my current location and weather</label>
+    </div>
+
+
+    <label for="temperature">Temperature (°F):</label>
+    <input type="number" id="temperature" placeholder="Enter temperature" />
+
+
+    <label for="humidity">Humidity (%):</label>
+    <input type="number" id="humidity" placeholder="Enter humidity" />
+
+
+    <button type="submit">Calculate Safe Drive-Away Time</button>
+  </form>
+
+
+  <div class="results" id="result"></div>
+
+
+  <script>
+    let adhesiveData = [];
+
+
+    async function loadAdhesives() {
+      const response = await fetch("urethanes.csv");
+      const text = await response.text();
+      const rows = text.split("\n");
+      adhesiveData = rows.slice(1).map(row => {
+        const [id, name, brand, type, recommended_drive_away_time, notes, price_usd] = row.split(',');
+        return { id, name, brand, type, recommended_drive_away_time, notes, price_usd };
+      });
+
+
+      const select = document.getElementById("adhesive");
+      adhesiveData.forEach(a => {
+        const option = document.createElement("option");
+        option.value = a.id;
+        option.text = `${a.name} (${a.brand})`;
+        select.appendChild(option);
+      });
+    }
+
+
+    async function fetchWeather(lat, lon) {
+      try {
+        const apiKey = "2107c55b775214a5584a961677103e99";
+        const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=imperial`;
+        const response = await fetch(url);
+        const data = await response.json();
+        document.getElementById("temperature").value = data.main.temp;
+        document.getElementById("humidity").value = data.main.humidity;
+      } catch (error) {
+        alert("Unable to fetch weather data.");
+      }
+    }
+
+
+    document.getElementById("useLocation").addEventListener("change", function () {
+      if (this.checked) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => fetchWeather(pos.coords.latitude, pos.coords.longitude),
+          () => alert("Location access denied or unavailable.")
+        );
+      } else {
+        document.getElementById("temperature").value = "";
+        document.getElementById("humidity").value = "";
+      }
+    });
+
+
+    document.getElementById("calcForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+
+      const selectedId = document.getElementById("adhesive").value;
+      const temperature = parseFloat(document.getElementById("temperature").value);
+      const humidity = parseFloat(document.getElementById("humidity").value);
+
+
+      const adhesive = adhesiveData.find(a => a.id === selectedId);
+      let driveTime = adhesive.recommended_drive_away_time;
+
+
+      // Example logic to adjust time (customize as needed)
+      if (!isNaN(temperature) && temperature < 50) {
+        driveTime = "Add 15 min (cold weather adjustment)";
+      }
+
+
+      let resultHtml = `<strong>Adhesive:</strong> ${adhesive.name}<br>`;
+      resultHtml += `<strong>Brand:</strong> ${adhesive.brand}<br>`;
+      resultHtml += `<strong>Type:</strong> ${adhesive.type}<br>`;
+      resultHtml += `<strong>Recommended Drive-Away Time:</strong> ${adhesive.recommended_drive_away_time}<br>`;
+      resultHtml += `<strong>Notes:</strong> ${adhesive.notes}<br>`;
+      resultHtml += `<strong>Price (USD):</strong> $${adhesive.price_usd}<br>`;
+      resultHtml += `<strong>Adjusted Drive-Away Time:</strong> ${driveTime}`;
+
+
+      document.getElementById("result").innerHTML = resultHtml;
+    });
+
+
+    loadAdhesives();
+  </script>
+</body>
+</html>
