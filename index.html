@@ -6,42 +6,37 @@
   <title>Safe Drive-Away Time Calculator</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    * {
-      box-sizing: border-box;
-    }
     body {
-      margin: 0;
       font-family: 'Inter', sans-serif;
-      background-color: #f1f5f9;
-      color: #1e293b;
-    }
-    header {
-      background-color: #0f172a;
-      color: white;
-      padding: 1rem 2rem;
-      text-align: center;
-      font-size: 1.75rem;
-      font-weight: 700;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    main {
-      max-width: 800px;
-      margin: 2rem auto;
       padding: 2rem;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+      background-color: #f0f4f8;
+      color: #333;
+      max-width: 800px;
+      margin: auto;
+      background-image: url('https://your-image-link.com/autoglass.jpg'); /* Replace with your own image URL */
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
     }
     h1 {
-      font-size: 1.75rem;
-      margin-bottom: 1rem;
       text-align: center;
-      color: #0f172a;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 2rem;
+      margin-bottom: 1.5rem;
+    }
+    form {
+      background: rgba(255, 255, 255, 0.9); 
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
     }
     label {
       font-weight: 600;
       margin-top: 1rem;
       display: block;
+      color: #333;
     }
     input, select, button {
       width: 100%;
@@ -50,9 +45,10 @@
       border: 1px solid #cbd5e1;
       border-radius: 8px;
       font-size: 1rem;
+      box-sizing: border-box;
     }
     button {
-      background-color: #0284c7;
+      background-color: #1E40AF;
       color: #fff;
       font-weight: 600;
       border: none;
@@ -61,65 +57,55 @@
       transition: background-color 0.3s ease;
     }
     button:hover {
-      background-color: #0369a1;
+      background-color: #2563EB;
     }
     .results {
       margin-top: 2rem;
-      background: #f9fafb;
+      background: rgba(255, 255, 255, 0.9); 
       padding: 1.5rem;
       border-radius: 12px;
-      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     }
     .highlight {
-      background-color: #dcfce7;
+      background-color: #e5f3e5;
       color: #166534;
       font-weight: 700;
       padding: 1rem;
       border-left: 6px solid #22c55e;
       margin-top: 1.5rem;
       border-radius: 6px;
-      font-size: 1.25rem;
-    }
-    footer {
-      text-align: center;
-      padding: 2rem;
-      font-size: 0.875rem;
-      color: #64748b;
     }
     .weather-toggle {
       margin-top: 1rem;
     }
+    .hidden {
+      display: none;
+    }
   </style>
 </head>
 <body>
-  <header>Smith Auto Service</header>
-  <main>
-    <h1>Safe Drive-Away Time Calculator</h1>
-    <form id="calcForm">
-      <label for="adhesive">Select Urethane Adhesive:</label>
-      <select id="adhesive" required></select>
+  <h1>Safe Drive-Away Time Calculator</h1>
+  <form id="calcForm">
+    <label for="adhesive">Select Urethane Adhesive:</label>
+    <select id="adhesive" required></select>
 
-      <div class="weather-toggle">
-        <input type="checkbox" id="useLocation" />
-        <label for="useLocation">Use my current location and weather</label>
-      </div>
+    <div class="weather-toggle">
+      <input type="checkbox" id="useLocation" />
+      <label for="useLocation">Use my current location and weather</label>
+    </div>
 
-      <label for="zip">Or enter ZIP Code:</label>
-      <input type="text" id="zip" maxlength="5" placeholder="Enter ZIP code" />
+    <label for="zip">Or enter ZIP Code:</label>
+    <input type="text" id="zip" maxlength="5" placeholder="Enter ZIP code" />
 
-      <label for="temperature">Temperature (°F):</label>
-      <input type="number" id="temperature" placeholder="Enter temperature" />
+    <label for="temperature">Temperature (°F):</label>
+    <input type="number" id="temperature" placeholder="Enter temperature" />
 
-      <label for="humidity">Humidity (%):</label>
-      <input type="number" id="humidity" placeholder="Enter humidity" />
+    <label for="humidity">Humidity (%):</label>
+    <input type="number" id="humidity" placeholder="Enter humidity" />
 
-      <button type="submit">Calculate Safe Drive-Away Time</button>
-    </form>
-    <div class="results" id="result"></div>
-  </main>
-  <footer>
-    &copy; 2025 Smith Auto Service. All rights reserved.
-  </footer>
+    <button type="submit">Calculate Safe Drive-Away Time</button>
+  </form>
+  <div class="results" id="result"></div>
   <script>
     let adhesiveData = [];
 
@@ -145,86 +131,4 @@
       try {
         const apiKey = "2107c55b775214a5584a961677103e99";
         const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=imperial`;
-        const response = await fetch(url);
-        const data = await response.json();
-        document.getElementById("temperature").value = data.main.temp;
-        document.getElementById("humidity").value = data.main.humidity;
-      } catch (error) {
-        alert("Unable to fetch weather data using location.");
-      }
-    }
-
-    async function fetchWeatherByZip(zip) {
-      try {
-        const apiKey = "2107c55b775214a5584a961677103e99";
-        const url = `https://api.openweathermap.org/data/2.5/weather?zip=${zip},us&appid=${apiKey}&units=imperial`;
-        const response = await fetch(url);
-        const data = await response.json();
-        document.getElementById("temperature").value = data.main.temp;
-        document.getElementById("humidity").value = data.main.humidity;
-      } catch (error) {
-        alert("Unable to fetch weather data using ZIP code.");
-      }
-    }
-
-    document.getElementById("useLocation").addEventListener("change", function () {
-      if (this.checked) {
-        document.getElementById("zip").value = "";
-        navigator.geolocation.getCurrentPosition(
-          (pos) => fetchWeather(pos.coords.latitude, pos.coords.longitude),
-          () => alert("Location access denied or unavailable.")
-        );
-      }
-    });
-
-    document.getElementById("zip").addEventListener("blur", function () {
-      if (!document.getElementById("useLocation").checked && this.value.length === 5) {
-        fetchWeatherByZip(this.value);
-      }
-    });
-
-    document.getElementById("calcForm").addEventListener("submit", function (e) {
-      e.preventDefault();
-
-      const selectedId = document.getElementById("adhesive").value;
-      const temperature = parseFloat(document.getElementById("temperature").value);
-      const humidity = parseFloat(document.getElementById("humidity").value);
-
-      const adhesive = adhesiveData.find(a => a.id === selectedId);
-      let baseMinutes = parseInt(adhesive.recommended_drive_away_time);
-      let adjustedMinutes = baseMinutes;
-
-      if (!isNaN(temperature)) {
-        if (temperature < 65) {
-          adjustedMinutes *= (1 + ((65 - temperature) * 0.03));
-        } else if (temperature > 100) {
-          adjustedMinutes *= 0.6;
-        }
-      }
-
-      if (!isNaN(humidity)) {
-        if (humidity < 30) {
-          adjustedMinutes *= (1 + ((30 - humidity) * 0.015));
-        } else if (humidity > 80) {
-          adjustedMinutes *= 0.85;
-        }
-      }
-
-      adjustedMinutes = Math.round(adjustedMinutes);
-      if (adjustedMinutes < 1) adjustedMinutes = 1;
-
-      let resultHtml = `<strong>Adhesive:</strong> ${adhesive.name}<br>`;
-      resultHtml += `<strong>Brand:</strong> ${adhesive.brand}<br>`;
-      resultHtml += `<strong>Type:</strong> ${adhesive.type}<br>`;
-      resultHtml += `<strong>Recommended Drive-Away Time:</strong> ${adhesive.recommended_drive_away_time} minutes<br>`;
-      resultHtml += `<strong>Notes:</strong> ${adhesive.notes}<br>`;
-      resultHtml += `<strong>Price (USD):</strong> $${adhesive.price_usd}<br>`;
-      resultHtml += `<div class="highlight">Adjusted Drive-Away Time: ${adjustedMinutes} minutes</div>`;
-
-      document.getElementById("result").innerHTML = resultHtml;
-    });
-
-    loadAdhesives();
-  </script>
-</body>
-</html>
+        const response = await fetch
