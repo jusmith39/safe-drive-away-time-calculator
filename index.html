@@ -4,138 +4,88 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Safe Drive-Away Time Calculator</title>
-  <!-- Google Fonts: Roboto -->
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
   <style>
-    * {
-      box-sizing: border-box;
-    }
     body {
-      font-family: 'Roboto', sans-serif;
-      margin: 0;
-      padding: 0;
-      background: linear-gradient(135deg, #f0f4f8, #d9e2ec);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      color: #333;
-    }
-    .container {
-      background-color: #fff;
+      font-family: Arial, sans-serif;
       padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 600px;
-      margin: 1rem;
+      background-color: #f4f4f4;
+      color: #333;
     }
     h1 {
       text-align: center;
-      margin-bottom: 1.5rem;
-      font-weight: 500;
     }
-    label {
-      margin-top: 1rem;
-      margin-bottom: 0.5rem;
-      font-weight: 500;
-    }
-    select, input {
-      width: 100%;
-      padding: 0.75rem;
-      margin-bottom: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 1rem;
-    }
-    input:focus, select:focus {
-      border-color: #4a90e2;
-      outline: none;
-      box-shadow: 0 0 5px rgba(74,144,226,0.5);
-    }
-    button {
-      width: 100%;
-      padding: 0.75rem;
-      background-color: #4a90e2;
-      border: none;
-      border-radius: 6px;
-      color: #fff;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: background-color 0.2s ease-in-out;
-    }
-    button:hover {
-      background-color: #3a78c2;
+    label, select, input {
+      display: block;
+      margin: 1rem 0 0.5rem;
     }
     .results {
       margin-top: 2rem;
-      padding: 1.5rem;
-      background: #f0f4f8;
+      padding: 1rem;
+      background: white;
       border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-      line-height: 1.6;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .highlight {
+      background-color: #d1e7dd;
+      padding: 0.5rem;
+      border-radius: 6px;
+      margin-top: 1rem;
+      font-weight: bold;
+      color: #0f5132;
     }
     .weather-toggle {
-      display: flex;
-      align-items: center;
-      margin-bottom: 1rem;
+      margin-top: 1rem;
     }
-    .weather-toggle input {
-      margin-right: 0.5rem;
-      transform: scale(1.2);
+    .hidden {
+      display: none;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Safe Drive-Away Time Calculator</h1>
-    <form id="calcForm">
-      <label for="adhesive">Select Urethane Adhesive:</label>
-      <select id="adhesive" required></select>
+  <h1>Safe Drive-Away Time Calculator</h1>
 
-      <div class="weather-toggle">
-        <input type="checkbox" id="useLocation" />
-        <label for="useLocation">Use my current location and weather</label>
-      </div>
+  <form id="calcForm">
+    <label for="adhesive">Select Urethane Adhesive:</label>
+    <select id="adhesive" required></select>
 
-      <label for="temperature">Temperature (°F):</label>
-      <input type="number" id="temperature" placeholder="Enter temperature" />
+    <div class="weather-toggle">
+      <input type="checkbox" id="useLocation" />
+      <label for="useLocation">Use my current location and weather</label>
+    </div>
 
-      <label for="humidity">Humidity (%):</label>
-      <input type="number" id="humidity" placeholder="Enter humidity" />
+    <label for="zip">Or enter ZIP Code:</label>
+    <input type="text" id="zip" maxlength="5" placeholder="Enter ZIP code" />
 
-      <button type="submit">Calculate Safe Drive-Away Time</button>
-    </form>
+    <label for="temperature">Temperature (°F):</label>
+    <input type="number" id="temperature" placeholder="Enter temperature" />
 
-    <div class="results" id="result"></div>
-  </div>
+    <label for="humidity">Humidity (%):</label>
+    <input type="number" id="humidity" placeholder="Enter humidity" />
+
+    <button type="submit">Calculate Safe Drive-Away Time</button>
+  </form>
+
+  <div class="results" id="result"></div>
 
   <script>
     let adhesiveData = [];
 
     async function loadAdhesives() {
-      try {
-        const response = await fetch("urethanes.csv");
-        const text = await response.text();
-        // Split by newline, filter out empty lines
-        const rows = text.split("\n").filter(row => row.trim() !== "");
-        adhesiveData = rows.slice(1).map(row => {
-          const columns = row.split(',').map(col => col.trim());
-          if (columns.length < 7) return null;
-          const [id, name, brand, type, recommended_drive_away_time, notes, price_usd] = columns;
-          return { id, name, brand, type, recommended_drive_away_time, notes, price_usd };
-        }).filter(Boolean);
-  
-        const select = document.getElementById("adhesive");
-        adhesiveData.forEach(a => {
-          const option = document.createElement("option");
-          option.value = a.id;
-          option.text = `${a.name} (${a.brand})`;
-          select.appendChild(option);
-        });
-      } catch (error) {
-        console.error("Error loading adhesives:", error);
-      }
+      const response = await fetch("urethanes.csv");
+      const text = await response.text();
+      const rows = text.split("\n");
+      adhesiveData = rows.slice(1).map(row => {
+        const [id, name, brand, type, recommended_drive_away_time, notes, price_usd] = row.split(',');
+        return { id, name, brand, type, recommended_drive_away_time, notes, price_usd };
+      });
+
+      const select = document.getElementById("adhesive");
+      adhesiveData.forEach(a => {
+        const option = document.createElement("option");
+        option.value = a.id;
+        option.text = `${a.name} (${a.brand})`;
+        select.appendChild(option);
+      });
     }
 
     async function fetchWeather(lat, lon) {
@@ -147,19 +97,36 @@
         document.getElementById("temperature").value = data.main.temp;
         document.getElementById("humidity").value = data.main.humidity;
       } catch (error) {
-        alert("Unable to fetch weather data.");
+        alert("Unable to fetch weather data using location.");
+      }
+    }
+
+    async function fetchWeatherByZip(zip) {
+      try {
+        const apiKey = "2107c55b775214a5584a961677103e99";
+        const url = `https://api.openweathermap.org/data/2.5/weather?zip=${zip},us&appid=${apiKey}&units=imperial`;
+        const response = await fetch(url);
+        const data = await response.json();
+        document.getElementById("temperature").value = data.main.temp;
+        document.getElementById("humidity").value = data.main.humidity;
+      } catch (error) {
+        alert("Unable to fetch weather data using ZIP code.");
       }
     }
 
     document.getElementById("useLocation").addEventListener("change", function () {
       if (this.checked) {
+        document.getElementById("zip").value = "";
         navigator.geolocation.getCurrentPosition(
           (pos) => fetchWeather(pos.coords.latitude, pos.coords.longitude),
           () => alert("Location access denied or unavailable.")
         );
-      } else {
-        document.getElementById("temperature").value = "";
-        document.getElementById("humidity").value = "";
+      }
+    });
+
+    document.getElementById("zip").addEventListener("blur", function () {
+      if (!document.getElementById("useLocation").checked && this.value.length === 5) {
+        fetchWeatherByZip(this.value);
       }
     });
 
@@ -171,24 +138,37 @@
       const humidity = parseFloat(document.getElementById("humidity").value);
 
       const adhesive = adhesiveData.find(a => a.id === selectedId);
-      if (!adhesive) {
-        alert("Please select an adhesive from the list.");
-        return;
-      }
-      let driveTime = adhesive.recommended_drive_away_time;
+      let baseMinutes = parseInt(adhesive.recommended_drive_away_time);
+      let adjustedMinutes = baseMinutes;
 
-      // Example logic to adjust time (customize as needed)
-      if (!isNaN(temperature) && temperature < 50) {
-        driveTime = "Add 15 min (cold weather adjustment)";
+      // Temperature Effects
+      if (!isNaN(temperature)) {
+        if (temperature < 65) {
+          adjustedMinutes *= (1 + ((65 - temperature) * 0.03));
+        } else if (temperature > 100) {
+          adjustedMinutes *= 0.6;
+        }
       }
+
+      // Humidity Effects
+      if (!isNaN(humidity)) {
+        if (humidity < 30) {
+          adjustedMinutes *= (1 + ((30 - humidity) * 0.015));
+        } else if (humidity > 80) {
+          adjustedMinutes *= 0.85;
+        }
+      }
+
+      adjustedMinutes = Math.round(adjustedMinutes);
+      if (adjustedMinutes < 1) adjustedMinutes = 1;
 
       let resultHtml = `<strong>Adhesive:</strong> ${adhesive.name}<br>`;
       resultHtml += `<strong>Brand:</strong> ${adhesive.brand}<br>`;
       resultHtml += `<strong>Type:</strong> ${adhesive.type}<br>`;
-      resultHtml += `<strong>Recommended Drive-Away Time:</strong> ${adhesive.recommended_drive_away_time}<br>`;
+      resultHtml += `<strong>Recommended Drive-Away Time:</strong> ${adhesive.recommended_drive_away_time} minutes<br>`;
       resultHtml += `<strong>Notes:</strong> ${adhesive.notes}<br>`;
       resultHtml += `<strong>Price (USD):</strong> $${adhesive.price_usd}<br>`;
-      resultHtml += `<strong>Adjusted Drive-Away Time:</strong> ${driveTime}`;
+      resultHtml += `<div class="highlight">Adjusted Drive-Away Time: ${adjustedMinutes} minutes</div>`;
 
       document.getElementById("result").innerHTML = resultHtml;
     });
