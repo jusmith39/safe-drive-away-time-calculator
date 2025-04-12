@@ -4,69 +4,122 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Safe Drive-Away Time Calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
+    * {
+      box-sizing: border-box;
+    }
     body {
-      font-family: Arial, sans-serif;
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: #f1f5f9;
+      color: #1e293b;
+    }
+    header {
+      background-color: #0f172a;
+      color: white;
+      padding: 1rem 2rem;
+      text-align: center;
+      font-size: 1.75rem;
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    main {
+      max-width: 800px;
+      margin: 2rem auto;
       padding: 2rem;
-      background-color: #f4f4f4;
-      color: #333;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
     }
     h1 {
+      font-size: 1.75rem;
+      margin-bottom: 1rem;
       text-align: center;
+      color: #0f172a;
     }
-    label, select, input {
+    label {
+      font-weight: 600;
+      margin-top: 1rem;
       display: block;
-      margin: 1rem 0 0.5rem;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 0.75rem;
+      margin-top: 0.5rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    button {
+      background-color: #0284c7;
+      color: #fff;
+      font-weight: 600;
+      border: none;
+      margin-top: 1.5rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #0369a1;
     }
     .results {
       margin-top: 2rem;
-      padding: 1rem;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      background: #f9fafb;
+      padding: 1.5rem;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
     }
     .highlight {
-      background-color: #d1e7dd;
-      padding: 0.5rem;
+      background-color: #dcfce7;
+      color: #166534;
+      font-weight: 700;
+      padding: 1rem;
+      border-left: 6px solid #22c55e;
+      margin-top: 1.5rem;
       border-radius: 6px;
-      margin-top: 1rem;
-      font-weight: bold;
-      color: #0f5132;
+      font-size: 1.25rem;
+    }
+    footer {
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.875rem;
+      color: #64748b;
     }
     .weather-toggle {
       margin-top: 1rem;
     }
-    .hidden {
-      display: none;
-    }
   </style>
 </head>
 <body>
-  <h1>Safe Drive-Away Time Calculator</h1>
+  <header>Smith Auto Service</header>
+  <main>
+    <h1>Safe Drive-Away Time Calculator</h1>
+    <form id="calcForm">
+      <label for="adhesive">Select Urethane Adhesive:</label>
+      <select id="adhesive" required></select>
 
-  <form id="calcForm">
-    <label for="adhesive">Select Urethane Adhesive:</label>
-    <select id="adhesive" required></select>
+      <div class="weather-toggle">
+        <input type="checkbox" id="useLocation" />
+        <label for="useLocation">Use my current location and weather</label>
+      </div>
 
-    <div class="weather-toggle">
-      <input type="checkbox" id="useLocation" />
-      <label for="useLocation">Use my current location and weather</label>
-    </div>
+      <label for="zip">Or enter ZIP Code:</label>
+      <input type="text" id="zip" maxlength="5" placeholder="Enter ZIP code" />
 
-    <label for="zip">Or enter ZIP Code:</label>
-    <input type="text" id="zip" maxlength="5" placeholder="Enter ZIP code" />
+      <label for="temperature">Temperature (°F):</label>
+      <input type="number" id="temperature" placeholder="Enter temperature" />
 
-    <label for="temperature">Temperature (°F):</label>
-    <input type="number" id="temperature" placeholder="Enter temperature" />
+      <label for="humidity">Humidity (%):</label>
+      <input type="number" id="humidity" placeholder="Enter humidity" />
 
-    <label for="humidity">Humidity (%):</label>
-    <input type="number" id="humidity" placeholder="Enter humidity" />
-
-    <button type="submit">Calculate Safe Drive-Away Time</button>
-  </form>
-
-  <div class="results" id="result"></div>
-
+      <button type="submit">Calculate Safe Drive-Away Time</button>
+    </form>
+    <div class="results" id="result"></div>
+  </main>
+  <footer>
+    &copy; 2025 Smith Auto Service. All rights reserved.
+  </footer>
   <script>
     let adhesiveData = [];
 
@@ -141,7 +194,6 @@
       let baseMinutes = parseInt(adhesive.recommended_drive_away_time);
       let adjustedMinutes = baseMinutes;
 
-      // Temperature Effects
       if (!isNaN(temperature)) {
         if (temperature < 65) {
           adjustedMinutes *= (1 + ((65 - temperature) * 0.03));
@@ -150,7 +202,6 @@
         }
       }
 
-      // Humidity Effects
       if (!isNaN(humidity)) {
         if (humidity < 30) {
           adjustedMinutes *= (1 + ((30 - humidity) * 0.015));
