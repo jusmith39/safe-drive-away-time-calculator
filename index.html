@@ -1,134 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Safe Drive-Away Time Calculator</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auto Glass Urethane Drive-Away Time Calculator</title>
   <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      padding: 2rem;
-      background-color: #f0f4f8;
-      color: #333;
-      max-width: 800px;
-      margin: auto;
-      background-image: url('https://your-image-link.com/autoglass.jpg'); /* Replace with your own image URL */
-      background-size: cover;
-      background-position: center;
-      background-attachment: fixed;
-      box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
-    }
-    h1 {
-      text-align: center;
-      color: #ffffff;
-      font-weight: 700;
-      font-size: 2rem;
-      margin-bottom: 1.5rem;
-    }
-    form {
-      background: rgba(255, 255, 255, 0.9); 
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-    }
-    label {
-      font-weight: 600;
-      margin-top: 1rem;
-      display: block;
-      color: #333;
-    }
-    input, select, button {
-      width: 100%;
-      padding: 0.75rem;
-      margin-top: 0.5rem;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      font-size: 1rem;
-      box-sizing: border-box;
-    }
-    button {
-      background-color: #1E40AF;
-      color: #fff;
-      font-weight: 600;
-      border: none;
-      margin-top: 1.5rem;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-    button:hover {
-      background-color: #2563EB;
-    }
-    .results {
-      margin-top: 2rem;
-      background: rgba(255, 255, 255, 0.9); 
-      padding: 1.5rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    }
-    .highlight {
-      background-color: #e5f3e5;
-      color: #166534;
-      font-weight: 700;
-      padding: 1rem;
-      border-left: 6px solid #22c55e;
-      margin-top: 1.5rem;
-      border-radius: 6px;
-    }
-    .weather-toggle {
-      margin-top: 1rem;
-    }
-    .hidden {
-      display: none;
-    }
+    body { font-family: Arial, sans-serif; padding: 2em; background: #eef3f7; }
+    .container { max-width: 600px; margin: auto; background: #fff; padding: 2em; border-radius: 10px; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
+    h2 { text-align: center; color: #003366; }
+    label, select, input { display: block; width: 100%; margin: 1em 0 0.5em; }
+    button { padding: 0.8em; background: #0056b3; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    button:hover { background: #003d80; }
+    .result { margin-top: 1.5em; font-weight: bold; text-align: center; font-size: 1.2em; color: #007B00; }
+    .highlight { background: #e6ffe6; padding: 1em; border: 1px solid #99cc99; border-radius: 8px; }
+    .weather-options { display: flex; justify-content: space-between; align-items: center; gap: 1em; margin-top: 1em; }
+    .weather-options input { flex: 1; }
   </style>
 </head>
 <body>
-  <h1>Safe Drive-Away Time Calculator</h1>
-  <form id="calcForm">
-    <label for="adhesive">Select Urethane Adhesive:</label>
-    <select id="adhesive" required></select>
+  <div class="container">
+    <h2>Drive-Away Time Calculator</h2>
+    <label for="urethane">Select Urethane Product:</label>
+    <select id="urethane">
+      <option value="60">Betaseal 1130 (60 min)</option>
+      <option value="30">SikaTack ELITE (30 min)</option>
+      <option value="60">SikaTack MACH 60 (60 min)</option>
+      <option value="30">SikaTack MACH-30 XV (30 min)</option>
+      <option value="60">SikaTack ULTIMATE (60 min)</option>
+      <option value="30">SikaTack Ultrafast II (30 min)</option>
+      <option value="60">SikaTack GO! (60 min)</option>
+      <option value="60">SikaTack MOVE (60 min)</option>
+      <option value="60">SikaTack PRO (60 min)</option>
+      <option value="60">Sikaflex P2G (60 min)</option>
+      <option value="60">Sikaflex P2G PLUS (60 min)</option>
+      <option value="60">Sikaflex-220+ (60 min)</option>
+      <option value="60">Sikaflex-255 FC (60 min)</option>
+      <option value="60">Sikaflex-227 (60 min)</option>
+      <option value="60">Sikaflex-268 PowerCure (60 min)</option>
+      <option value="60">Sikaflex-295 UV (60 min)</option>
+    </select>
 
-    <div class="weather-toggle">
-      <input type="checkbox" id="useLocation" />
-      <label for="useLocation">Use my current location and weather</label>
+    <div class="weather-options">
+      <button onclick="getWeather()">Use My Location</button>
+      <input type="text" id="zip" placeholder="Or enter ZIP code">
+      <button onclick="getWeatherByZip()">Get Weather</button>
     </div>
 
-    <label for="zip">Or enter ZIP Code:</label>
-    <input type="text" id="zip" maxlength="5" placeholder="Enter ZIP code" />
-
     <label for="temperature">Temperature (°F):</label>
-    <input type="number" id="temperature" placeholder="Enter temperature" />
+    <input type="number" id="temperature" value="70">
 
     <label for="humidity">Humidity (%):</label>
-    <input type="number" id="humidity" placeholder="Enter humidity" />
+    <input type="number" id="humidity" value="50">
 
-    <button type="submit">Calculate Safe Drive-Away Time</button>
-  </form>
-  <div class="results" id="result"></div>
+    <button onclick="calculateSDAT()">Calculate Drive-Away Time</button>
+
+    <div class="result highlight" id="result"></div>
+  </div>
+
   <script>
-    let adhesiveData = [];
+    function calculateSDAT() {
+      const baseSDAT = parseFloat(document.getElementById('urethane').value);
+      const temp = parseFloat(document.getElementById('temperature').value);
+      const humidity = parseFloat(document.getElementById('humidity').value);
 
-    async function loadAdhesives() {
-      const response = await fetch("urethanes.csv");
-      const text = await response.text();
-      const rows = text.split("\n");
-      adhesiveData = rows.slice(1).map(row => {
-        const [id, name, brand, type, recommended_drive_away_time, notes, price_usd] = row.split(',');
-        return { id, name, brand, type, recommended_drive_away_time, notes, price_usd };
-      });
+      let T_factor = 1 - 0.012 * (temp - 70);
+      let H_factor = 1 - 0.005 * (humidity - 50);
+      let raw_SDAT = baseSDAT * T_factor * H_factor;
+      let adjustedSDAT = Math.max(Math.min(raw_SDAT, baseSDAT * 2), baseSDAT * 0.5);
 
-      const select = document.getElementById("adhesive");
-      adhesiveData.forEach(a => {
-        const option = document.createElement("option");
-        option.value = a.id;
-        option.text = `${a.name} (${a.brand})`;
-        select.appendChild(option);
-      });
+      document.getElementById('result').innerHTML = `Adjusted Safe Drive-Away Time: <strong>${adjustedSDAT.toFixed(1)} minutes</strong>`;
     }
 
-    async function fetchWeather(lat, lon) {
-      try {
-        const apiKey = "2107c55b775214a5584a961677103e99";
-        const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=imperial`;
-        const response = await fetch
+    function getWeather() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+          fetchWeather(position.coords.latitude, position.coords.longitude);
+        }, () => {
+          alert("Location access denied. Please enter your ZIP code instead.");
+        });
+      } else {
+        alert("Geolocation is not supported by this browser.");
+      }
+    }
+
+    function getWeatherByZip() {
+      const zip = document.getElementById('zip').value;
+      if (!zip) return alert("Please enter a ZIP code.");
+
+      fetch(`https://api.weatherapi.com/v1/current.json?key=YOUR_API_KEY&q=${zip}`)
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('temperature').value = data.current.temp_f;
+          document.getElementById('humidity').value = data.current.humidity;
+        })
+        .catch(() => alert("Failed to fetch weather for the ZIP code provided."));
+    }
+
+    function fetchWeather(lat, lon) {
+      fetch(`https://api.weatherapi.com/v1/current.json?key=YOUR_API_KEY&q=${lat},${lon}`)
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('temperature').value = data.current.temp_f;
+          document.getElementById('humidity').value = data.current.humidity;
+        })
+        .catch(() => alert("Failed to retrieve weather data."));
+    }
+  </script>
+</body>
+</html>
