@@ -10,52 +10,62 @@
       font-family: 'Inter', sans-serif;
       margin: 0;
       padding: 0;
-      background: #f4f7fa;
+      background: #f1f5f9;
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
     }
     .container {
-      max-width: 600px;
+      max-width: 700px;
       width: 100%;
-      background: #fff;
-      padding: 2em;
-      border-radius: 16px;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+      background: #ffffff;
+      padding: 3em 2em;
+      border-radius: 12px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
       position: relative;
+      background: linear-gradient(135deg, #ffffff, #e9f1f7);
     }
     h2 {
       text-align: center;
-      color: #002b45;
-      margin-bottom: 1em;
+      color: #003d5b;
+      margin-bottom: 1.5em;
       font-weight: 600;
+      font-size: 1.8em;
+      text-transform: uppercase;
     }
     .car-icon {
       display: block;
-      margin: 0 auto 1em;
+      margin: 0 auto 1.5em;
       width: 60px;
+      filter: drop-shadow(2px 2px 5px rgba(0,0,0,0.1));
     }
     label {
       font-weight: 600;
-      margin-top: 1em;
+      margin-top: 1.2em;
       display: block;
-      margin-bottom: 0.5em;
+      margin-bottom: 0.6em;
+      color: #003d5b;
     }
     select, input[type="text"], input[type="number"] {
       width: 100%;
-      padding: 0.75em;
+      padding: 0.85em;
       border: 1px solid #ccc;
       border-radius: 8px;
-      margin-bottom: 1em;
-      font-size: 1em;
+      margin-bottom: 1.5em;
+      font-size: 1.1em;
+      transition: border-color 0.3s ease;
+    }
+    select:focus, input[type="text"]:focus, input[type="number"]:focus {
+      border-color: #0073e6;
+      outline: none;
     }
     button {
-      margin-top: 1.5em;
+      margin-top: 2em;
       width: 100%;
-      padding: 0.9em;
-      font-size: 1.1em;
-      background: #0073e6;
+      padding: 1em;
+      font-size: 1.2em;
+      background: #005bb5;
       color: #fff;
       border: none;
       border-radius: 8px;
@@ -67,27 +77,50 @@
       gap: 0.5em;
     }
     button:hover {
-      background: #005bb5;
+      background: #003d5b;
       transform: translateY(-2px);
     }
-    .result {
+    button:active {
+      transform: translateY(1px);
+    }
+    .result, .note {
       margin-top: 2em;
+      padding: 1.5em;
       text-align: center;
       font-size: 1.2em;
-      font-weight: bold;
+      font-weight: 600;
+      background: #e9f7f9;
+      border-radius: 8px;
+      border: 1px solid #cce1f0;
       color: #007B00;
     }
     .highlight {
-      background: #e8fbe8;
+      background: #dff7dc;
       padding: 1em;
-      border: 1px solid #b2deb2;
       border-radius: 8px;
+      font-weight: bold;
     }
     .loading {
       text-align: center;
       color: #666;
       font-style: italic;
       display: none;
+    }
+    .note {
+      background: #fff7d6;
+      border: 1px solid #f1e0a6;
+      margin-top: 1em;
+      font-size: 1em;
+      color: #d88e0c;
+      font-style: italic;
+      padding: 1em;
+      border-radius: 8px;
+    }
+    .footer {
+      text-align: center;
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 3em;
     }
   </style>
 </head>
@@ -114,6 +147,7 @@
 
     <div class="loading" id="loading">Fetching weather...</div>
     <div class="result highlight" id="result"></div>
+    <div class="note" id="note"></div>
   </div>
 
   <script>
@@ -136,7 +170,8 @@
               name: entry.name,
               baseSDAT: entry.baseSDAT,
               minTemp: entry.minTemp,
-              minHumidity: entry.minHumidity
+              minHumidity: entry.minHumidity,
+              note: entry.note || ''
             };
             const opt = document.createElement('option');
             opt.value = entry.id;
@@ -159,6 +194,7 @@
       let adjustedSDAT = product.baseSDAT * tempFactor * humidityFactor;
 
       document.getElementById('result').innerHTML = `Adjusted Safe Drive-Away Time for <strong>${product.name}</strong>: <strong>${adjustedSDAT.toFixed(1)} minutes</strong>`;
+      document.getElementById('note').innerHTML = product.note ? `<em>Note:</em> ${product.note}` : '';
     }
 
     function getWeather() {
