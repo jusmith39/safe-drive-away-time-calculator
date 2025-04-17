@@ -50,7 +50,30 @@
       margin-bottom: 1em;
       font-size: 1em;
     }
-    button {
+    .button-row {
+      display: flex;
+      gap: 1em;
+      margin-top: 1em;
+    }
+    .button-row button {
+      flex: 1;
+      padding: 0.9em;
+      font-size: 1em;
+      background: #0073e6;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .button-row button:hover {
+      background: #005bb5;
+      transform: translateY(-2px);
+    }
+    button.calculate {
       margin-top: 1.5em;
       width: 100%;
       padding: 0.9em;
@@ -66,7 +89,7 @@
       justify-content: center;
       gap: 0.5em;
     }
-    button:hover {
+    button.calculate:hover {
       background: #005bb5;
       transform: translateY(-2px);
     }
@@ -89,27 +112,6 @@
       font-style: italic;
       display: none;
     }
-    .button-group {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 1em;
-    }
-    .button-group button {
-      width: 48%;
-      font-size: 1em;
-      padding: 0.75em;
-      border-radius: 8px;
-    }
-    .button-group button:hover {
-      background: #005bb5;
-      transform: translateY(-2px);
-    }
-    .note {
-      margin-top: 1em;
-      text-align: center;
-      font-size: 0.9em;
-      color: #888;
-    }
   </style>
 </head>
 <body>
@@ -120,13 +122,11 @@
     <label for="urethane">Urethane Product</label>
     <select id="urethane"></select>
 
-    <div class="button-group">
-      <button onclick="getWeather()">Detect My Location</button>
-      <button onclick="showZipInput()">Or Enter Manually</button>
-    </div>
+    <input type="text" id="zip" placeholder="Enter ZIP code (optional)">
 
-    <div id="zip-container" style="display: none;">
-      <input type="text" id="zip" placeholder="Enter ZIP code">
+    <div class="button-row">
+      <button onclick="getWeather()">📍 Detect My Location</button>
+      <button onclick="manualZipFetch()">✍️ Or Enter Manually</button>
     </div>
 
     <label for="temperature">Temperature (°F)</label>
@@ -135,18 +135,17 @@
     <label for="humidity">Humidity (%)</label>
     <input type="number" id="humidity" value="50">
 
-    <button onclick="calculateSDAT()">
+    <button class="calculate" onclick="calculateSDAT()">
       <span>Calculate Drive-Away Time</span>
       <span>🧮</span>
     </button>
 
     <div class="loading" id="loading">Fetching weather...</div>
     <div class="result highlight" id="result"></div>
-    <div class="note" id="note"></div>
   </div>
 
   <script>
-    const API_KEY = '54e2db91334c4bbda70193703240904';
+    const API_KEY = 'YOUR_FULL_WEATHERAPI_KEY_HERE';
     let urethaneData = {};
 
     function loadUrethanesFromCSV(filePath) {
@@ -159,18 +158,16 @@
             const values = line.split(',');
             const entry = {};
             headers.forEach((h, i) => {
-              entry[h.trim()] = isNaN(values[i]) ? values[i].trim() : Number(values[i]);
+              entry[h.trim()] = values[i].trim();
             });
-            urethaneData[entry.id] = {
-              name: entry.name,
-              baseSDAT: entry.baseSDAT,
-              minTemp: entry.minTemp,
-              minHumidity: entry.minHumidity,
-              note: entry.note || ''
-            };
+            entry.baseSDAT = parseFloat(entry.baseSDAT);
+            entry.minTemp = parseFloat(entry.minTemp);
+            entry.minHumidity = parseFloat(entry.minHumidity);
+            urethaneData[entry.id] = entry;
+
             const opt = document.createElement('option');
             opt.value = entry.id;
-            opt.textContent = entry.name;
+            opt.textContent = `${entry.name} (${entry.brand})`;
             document.getElementById('urethane').appendChild(opt);
           });
         });
@@ -184,25 +181,15 @@
       const temp = parseFloat(document.getElementById('temperature').value);
       const humidity = parseFloat(document.getElementById('humidity').value);
 
-      if (isNaN(temp) || isNaN(humidity) || isNaN(product.baseSDAT)) {
-        alert('Please ensure all fields are filled with valid values.');
-        return;
-      }
-
       let tempFactor = temp < product.minTemp ? 1 + 0.03 * (product.minTemp - temp) : 1;
       let humidityFactor = humidity < product.minHumidity ? 1 + 0.01 * (product.minHumidity - humidity) : 1;
       let adjustedSDAT = product.baseSDAT * tempFactor * humidityFactor;
 
-      if (isNaN(adjustedSDAT)) {
-        document.getElementById('result').innerHTML = 'Error calculating Safe Drive-Away Time.';
-        return;
-      }
-
       document.getElementById('result').innerHTML = `Adjusted Safe Drive-Away Time for <strong>${product.name}</strong>: <strong>${adjustedSDAT.toFixed(1)} minutes</strong>`;
-      document.getElementById('note').innerHTML = product.note ? `<em>Note:</em> ${product.note}` : '';
     }
 
     function getWeather() {
+      document.getElementById('loading').style.display = 'block';
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(position => {
           fetchWeather(position.coords.latitude, position.coords.longitude);
@@ -210,8 +197,12 @@
       }
     }
 
-    function showZipInput() {
-      document.getElementById('zip-container').style.display = 'block';
+    function manualZipFetch() {
+      const zip = document.getElementById('zip').value;
+      if (zip.length >= 5) {
+        document.getElementById('loading').style.display = 'block';
+        getWeatherByZip(zip);
+      }
     }
 
     function getWeatherByZip(zip) {
@@ -243,14 +234,6 @@
     window.onload = () => {
       loadUrethanesFromCSV('urethanes.csv');
     };
-
-    document.getElementById('zip').addEventListener('input', () => {
-      const zip = document.getElementById('zip').value;
-      if (zip.length >= 5) {
-        document.getElementById('loading').style.display = 'block';
-        getWeatherByZip(zip);
-      }
-    });
   </script>
 </body>
 </html>
