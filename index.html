@@ -13,7 +13,7 @@
     button:hover { background: #003d80; }
     .result { margin-top: 1.5em; font-weight: bold; text-align: center; font-size: 1.2em; color: #007B00; }
     .highlight { background: #e6ffe6; padding: 1em; border: 1px solid #99cc99; border-radius: 8px; }
-    .weather-options { display: flex; justify-content: space-between; align-items: center; gap: 1em; margin-top: 1em; }
+    .weather-options { display: flex; gap: 1em; margin-top: 1em; }
     .weather-options input { flex: 1; }
   </style>
 </head>
@@ -41,9 +41,7 @@
     </select>
 
     <div class="weather-options">
-      <button onclick="getWeather()">Use My Location</button>
-      <input type="text" id="zip" placeholder="Or enter ZIP code">
-      <button onclick="getWeatherByZip()">Get Weather</button>
+      <input type="text" id="zip" placeholder="Enter ZIP code or leave blank for auto-location">
     </div>
 
     <label for="temperature">Temperature (°F):</label>
@@ -58,6 +56,15 @@
   </div>
 
   <script>
+    window.onload = () => {
+      const zip = document.getElementById('zip').value;
+      if (zip) {
+        getWeatherByZip(zip);
+      } else {
+        getWeather();
+      }
+    }
+
     function calculateSDAT() {
       const baseSDAT = parseFloat(document.getElementById('urethane').value);
       const temp = parseFloat(document.getElementById('temperature').value);
@@ -75,18 +82,11 @@
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(position => {
           fetchWeather(position.coords.latitude, position.coords.longitude);
-        }, () => {
-          alert("Location access denied. Please enter your ZIP code instead.");
         });
-      } else {
-        alert("Geolocation is not supported by this browser.");
       }
     }
 
-    function getWeatherByZip() {
-      const zip = document.getElementById('zip').value;
-      if (!zip) return alert("Please enter a ZIP code.");
-
+    function getWeatherByZip(zip) {
       fetch(`https://api.weatherapi.com/v1/current.json?key=YOUR_API_KEY&q=${zip}`)
         .then(res => res.json())
         .then(data => {
