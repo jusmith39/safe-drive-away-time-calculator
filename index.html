@@ -89,6 +89,27 @@
       font-style: italic;
       display: none;
     }
+    .button-group {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1em;
+    }
+    .button-group button {
+      width: 48%;
+      font-size: 1em;
+      padding: 0.75em;
+      border-radius: 8px;
+    }
+    .button-group button:hover {
+      background: #005bb5;
+      transform: translateY(-2px);
+    }
+    .note {
+      margin-top: 1em;
+      text-align: center;
+      font-size: 0.9em;
+      color: #888;
+    }
   </style>
 </head>
 <body>
@@ -99,7 +120,14 @@
     <label for="urethane">Urethane Product</label>
     <select id="urethane"></select>
 
-    <input type="text" id="zip" placeholder="Enter ZIP code (optional)">
+    <div class="button-group">
+      <button onclick="getWeather()">Detect My Location</button>
+      <button onclick="showZipInput()">Or Enter Manually</button>
+    </div>
+
+    <div id="zip-container" style="display: none;">
+      <input type="text" id="zip" placeholder="Enter ZIP code">
+    </div>
 
     <label for="temperature">Temperature (°F)</label>
     <input type="number" id="temperature" value="70">
@@ -114,10 +142,11 @@
 
     <div class="loading" id="loading">Fetching weather...</div>
     <div class="result highlight" id="result"></div>
+    <div class="note" id="note"></div>
   </div>
 
   <script>
-    const API_KEY = 'YOUR_FULL_WEATHERAPI_KEY_HERE';
+    const API_KEY = '54e2db91334c4bbda70193703240904';
     let urethaneData = {};
 
     function loadUrethanesFromCSV(filePath) {
@@ -130,13 +159,15 @@
             const values = line.split(',');
             const entry = {};
             headers.forEach((h, i) => {
-              entry[h.trim()] = values[i].trim();
+              entry[h.trim()] = isNaN(values[i]) ? values[i].trim() : Number(values[i]);
             });
-            entry.baseSDAT = parseFloat(entry.baseSDAT);
-            entry.minTemp = parseFloat(entry.minTemp);
-            entry.minHumidity = parseFloat(entry.minHumidity);
-            urethaneData[entry.id] = entry;
-
+            urethaneData[entry.id] = {
+              name: entry.name,
+              baseSDAT: entry.baseSDAT,
+              minTemp: entry.minTemp,
+              minHumidity: entry.minHumidity,
+              note: entry.note || ''
+            };
             const opt = document.createElement('option');
             opt.value = entry.id;
             opt.textContent = entry.name;
@@ -153,11 +184,22 @@
       const temp = parseFloat(document.getElementById('temperature').value);
       const humidity = parseFloat(document.getElementById('humidity').value);
 
+      if (isNaN(temp) || isNaN(humidity) || isNaN(product.baseSDAT)) {
+        alert('Please ensure all fields are filled with valid values.');
+        return;
+      }
+
       let tempFactor = temp < product.minTemp ? 1 + 0.03 * (product.minTemp - temp) : 1;
       let humidityFactor = humidity < product.minHumidity ? 1 + 0.01 * (product.minHumidity - humidity) : 1;
       let adjustedSDAT = product.baseSDAT * tempFactor * humidityFactor;
 
+      if (isNaN(adjustedSDAT)) {
+        document.getElementById('result').innerHTML = 'Error calculating Safe Drive-Away Time.';
+        return;
+      }
+
       document.getElementById('result').innerHTML = `Adjusted Safe Drive-Away Time for <strong>${product.name}</strong>: <strong>${adjustedSDAT.toFixed(1)} minutes</strong>`;
+      document.getElementById('note').innerHTML = product.note ? `<em>Note:</em> ${product.note}` : '';
     }
 
     function getWeather() {
@@ -166,6 +208,10 @@
           fetchWeather(position.coords.latitude, position.coords.longitude);
         });
       }
+    }
+
+    function showZipInput() {
+      document.getElementById('zip-container').style.display = 'block';
     }
 
     function getWeatherByZip(zip) {
@@ -195,13 +241,6 @@
     }
 
     window.onload = () => {
-      document.getElementById('loading').style.display = 'block';
-      const zip = document.getElementById('zip').value;
-      if (zip && zip.length >= 5) {
-        getWeatherByZip(zip);
-      } else {
-        getWeather();
-      }
       loadUrethanesFromCSV('urethanes.csv');
     };
 
