@@ -22,22 +22,20 @@
     <h2>Drive-Away Time Calculator</h2>
     <label for="urethane">Select Urethane Product:</label>
     <select id="urethane">
-      <option value="60">Betaseal 1130 (60 min)</option>
-      <option value="30">SikaTack ELITE (30 min)</option>
-      <option value="60">SikaTack MACH 60 (60 min)</option>
-      <option value="30">SikaTack MACH-30 XV (30 min)</option>
-      <option value="60">SikaTack ULTIMATE (60 min)</option>
-      <option value="30">SikaTack Ultrafast II (30 min)</option>
-      <option value="60">SikaTack GO! (60 min)</option>
-      <option value="60">SikaTack MOVE (60 min)</option>
-      <option value="60">SikaTack PRO (60 min)</option>
-      <option value="60">Sikaflex P2G (60 min)</option>
-      <option value="60">Sikaflex P2G PLUS (60 min)</option>
-      <option value="60">Sikaflex-220+ (60 min)</option>
-      <option value="60">Sikaflex-255 FC (60 min)</option>
-      <option value="60">Sikaflex-227 (60 min)</option>
-      <option value="60">Sikaflex-268 PowerCure (60 min)</option>
-      <option value="60">Sikaflex-295 UV (60 min)</option>
+      <option value="ACE">BETASEAL ACE (30 min @ 0°F)</option>
+      <option value="EXPRESS">BETASEAL Express APG (60 min @ 0°F)</option>
+      <option value="XPRESS30">BETASEAL Xpress30 (30 min @ 0°F)</option>
+      <option value="EXPRESS_PLUS">BETASEAL Express+ (60 min @ 0°F)</option>
+      <option value="418HV">BETASEAL U-418HV (120 min @ 40°F)</option>
+      <option value="418">BETASEAL U-418 (480 min @ 70°F)</option>
+      <option value="428HV">BETASEAL U-428+HV (180-240 min @ 32–40°F)</option>
+      <option value="838HV">BETASEAL U-838HV (180-240 min @ 32–40°F)</option>
+      <option value="ELITE">SIKATack Elite (30 min @ 14°F)</option>
+      <option value="PRO">SIKATack Pro (30 min @ 14°F)</option>
+      <option value="DRIVE">SIKATack Drive (60 min @ 41°F)</option>
+      <option value="GO">SIKATack Go! (120 min @ 41°F)</option>
+      <option value="P2G">Sikaflex P2G (360 min @ 41°F)</option>
+      <option value="P2G_PLUS">Sikaflex P2G PLUS (180 min @ 41°F)</option>
     </select>
 
     <div class="weather-options">
@@ -56,6 +54,23 @@
   </div>
 
   <script>
+    const urethaneData = {
+      ACE: { baseSDAT: 30, minTemp: 0, minHumidity: 50 },
+      EXPRESS: { baseSDAT: 60, minTemp: 0, minHumidity: 50 },
+      XPRESS30: { baseSDAT: 30, minTemp: 0, minHumidity: 50 },
+      EXPRESS_PLUS: { baseSDAT: 60, minTemp: 0, minHumidity: 50 },
+      418HV: { baseSDAT: 120, minTemp: 40, minHumidity: 50 },
+      418: { baseSDAT: 480, minTemp: 70, minHumidity: 50 },
+      428HV: { baseSDAT: 240, minTemp: 32, minHumidity: 50 },
+      838HV: { baseSDAT: 240, minTemp: 32, minHumidity: 50 },
+      ELITE: { baseSDAT: 30, minTemp: 14, minHumidity: 50 },
+      PRO: { baseSDAT: 30, minTemp: 14, minHumidity: 50 },
+      DRIVE: { baseSDAT: 60, minTemp: 41, minHumidity: 50 },
+      GO: { baseSDAT: 120, minTemp: 41, minHumidity: 50 },
+      P2G: { baseSDAT: 360, minTemp: 41, minHumidity: 50 },
+      P2G_PLUS: { baseSDAT: 180, minTemp: 41, minHumidity: 50 }
+    };
+
     window.onload = () => {
       const zip = document.getElementById('zip').value;
       if (zip) {
@@ -66,14 +81,14 @@
     }
 
     function calculateSDAT() {
-      const baseSDAT = parseFloat(document.getElementById('urethane').value);
+      const selected = document.getElementById('urethane').value;
+      const product = urethaneData[selected];
       const temp = parseFloat(document.getElementById('temperature').value);
       const humidity = parseFloat(document.getElementById('humidity').value);
 
-      let T_factor = 1 - 0.012 * (temp - 70);
-      let H_factor = 1 - 0.005 * (humidity - 50);
-      let raw_SDAT = baseSDAT * T_factor * H_factor;
-      let adjustedSDAT = Math.max(Math.min(raw_SDAT, baseSDAT * 2), baseSDAT * 0.5);
+      let tempFactor = temp < product.minTemp ? 1 + 0.03 * (product.minTemp - temp) : 1;
+      let humidityFactor = humidity < product.minHumidity ? 1 + 0.01 * (product.minHumidity - humidity) : 1;
+      let adjustedSDAT = product.baseSDAT * tempFactor * humidityFactor;
 
       document.getElementById('result').innerHTML = `Adjusted Safe Drive-Away Time: <strong>${adjustedSDAT.toFixed(1)} minutes</strong>`;
     }
