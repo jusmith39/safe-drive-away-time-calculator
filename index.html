@@ -5,47 +5,75 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Auto Glass Urethane Drive-Away Time Calculator</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 2em; background: #eef3f7; }
-    .container { max-width: 600px; margin: auto; background: #fff; padding: 2em; border-radius: 10px; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
-    h2 { text-align: center; color: #003366; }
-    label, select, input { display: block; width: 100%; margin: 1em 0 0.5em; }
-    button { padding: 0.8em; background: #0056b3; color: white; border: none; border-radius: 5px; cursor: pointer; }
-    button:hover { background: #003d80; }
-    .result { margin-top: 1.5em; font-weight: bold; text-align: center; font-size: 1.2em; color: #007B00; }
-    .highlight { background: #e6ffe6; padding: 1em; border: 1px solid #99cc99; border-radius: 8px; }
-    .weather-options { display: flex; gap: 1em; margin-top: 1em; }
-    .weather-options input { flex: 1; }
+    body { font-family: Arial, sans-serif; padding: 2em; background: #f4f7fa; }
+    .container { max-width: 600px; margin: auto; background: #fff; padding: 2em; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+    h2 { text-align: center; color: #002b45; margin-bottom: 1.5em; }
+    label { font-weight: bold; margin-top: 1em; }
+    select, input[type="text"], input[type="number"] {
+      width: 100%;
+      padding: 0.6em;
+      margin-top: 0.3em;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    button {
+      margin-top: 1.5em;
+      width: 100%;
+      padding: 0.9em;
+      font-size: 1em;
+      background: #0073e6;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: #005bb5;
+    }
+    .result {
+      margin-top: 2em;
+      text-align: center;
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #007B00;
+    }
+    .highlight {
+      background: #e8fbe8;
+      padding: 1em;
+      border: 1px solid #b2deb2;
+      border-radius: 8px;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>Drive-Away Time Calculator</h2>
-    <label for="urethane">Select Urethane Product:</label>
+    <h2>Safe Drive-Away Time Calculator</h2>
+
+    <label for="urethane">Urethane Product</label>
     <select id="urethane">
-      <option value="ACE">BETASEAL ACE (30 min @ 0°F)</option>
-      <option value="EXPRESS">BETASEAL Express APG (60 min @ 0°F)</option>
-      <option value="XPRESS30">BETASEAL Xpress30 (30 min @ 0°F)</option>
-      <option value="EXPRESS_PLUS">BETASEAL Express+ (60 min @ 0°F)</option>
-      <option value="418HV">BETASEAL U-418HV (120 min @ 40°F)</option>
-      <option value="418">BETASEAL U-418 (480 min @ 70°F)</option>
-      <option value="428HV">BETASEAL U-428+HV (180-240 min @ 32–40°F)</option>
-      <option value="838HV">BETASEAL U-838HV (180-240 min @ 32–40°F)</option>
-      <option value="ELITE">SIKATack Elite (30 min @ 14°F)</option>
-      <option value="PRO">SIKATack Pro (30 min @ 14°F)</option>
-      <option value="DRIVE">SIKATack Drive (60 min @ 41°F)</option>
-      <option value="GO">SIKATack Go! (120 min @ 41°F)</option>
-      <option value="P2G">Sikaflex P2G (360 min @ 41°F)</option>
-      <option value="P2G_PLUS">Sikaflex P2G PLUS (180 min @ 41°F)</option>
+      <option value="ACE">BETASEAL ACE</option>
+      <option value="EXPRESS">BETASEAL Express APG</option>
+      <option value="XPRESS30">BETASEAL Xpress30</option>
+      <option value="EXPRESS_PLUS">BETASEAL Express+</option>
+      <option value="418HV">BETASEAL U-418HV</option>
+      <option value="418">BETASEAL U-418</option>
+      <option value="428HV">BETASEAL U-428+HV</option>
+      <option value="838HV">BETASEAL U-838HV</option>
+      <option value="ELITE">SIKATack Elite</option>
+      <option value="PRO">SIKATack Pro</option>
+      <option value="DRIVE">SIKATack Drive</option>
+      <option value="GO">SIKATack Go!</option>
+      <option value="P2G">Sikaflex P2G</option>
+      <option value="P2G_PLUS">Sikaflex P2G PLUS</option>
     </select>
 
-    <div class="weather-options">
-      <input type="text" id="zip" placeholder="Enter ZIP code or leave blank for auto-location">
-    </div>
+    <input type="text" id="zip" placeholder="Enter ZIP code or leave blank for auto-location">
 
-    <label for="temperature">Temperature (°F):</label>
+    <label for="temperature">Temperature (°F)</label>
     <input type="number" id="temperature" value="70">
 
-    <label for="humidity">Humidity (%):</label>
+    <label for="humidity">Humidity (%)</label>
     <input type="number" id="humidity" value="50">
 
     <button onclick="calculateSDAT()">Calculate Drive-Away Time</button>
@@ -54,15 +82,17 @@
   </div>
 
   <script>
+    const API_KEY = 'YOUR_ACTUAL_API_KEY_HERE';
+
     const urethaneData = {
       ACE: { baseSDAT: 30, minTemp: 0, minHumidity: 50 },
       EXPRESS: { baseSDAT: 60, minTemp: 0, minHumidity: 50 },
       XPRESS30: { baseSDAT: 30, minTemp: 0, minHumidity: 50 },
       EXPRESS_PLUS: { baseSDAT: 60, minTemp: 0, minHumidity: 50 },
-      418HV: { baseSDAT: 120, minTemp: 40, minHumidity: 50 },
-      418: { baseSDAT: 480, minTemp: 70, minHumidity: 50 },
-      428HV: { baseSDAT: 240, minTemp: 32, minHumidity: 50 },
-      838HV: { baseSDAT: 240, minTemp: 32, minHumidity: 50 },
+      "418HV": { baseSDAT: 120, minTemp: 40, minHumidity: 50 },
+      "418": { baseSDAT: 480, minTemp: 70, minHumidity: 50 },
+      "428HV": { baseSDAT: 240, minTemp: 32, minHumidity: 50 },
+      "838HV": { baseSDAT: 240, minTemp: 32, minHumidity: 50 },
       ELITE: { baseSDAT: 30, minTemp: 14, minHumidity: 50 },
       PRO: { baseSDAT: 30, minTemp: 14, minHumidity: 50 },
       DRIVE: { baseSDAT: 60, minTemp: 41, minHumidity: 50 },
@@ -73,12 +103,19 @@
 
     window.onload = () => {
       const zip = document.getElementById('zip').value;
-      if (zip) {
+      if (zip.length >= 5) {
         getWeatherByZip(zip);
       } else {
         getWeather();
       }
-    }
+    };
+
+    document.getElementById('zip').addEventListener('input', () => {
+      const zip = document.getElementById('zip').value;
+      if (zip.length >= 5) {
+        getWeatherByZip(zip);
+      }
+    });
 
     function calculateSDAT() {
       const selected = document.getElementById('urethane').value;
@@ -102,7 +139,7 @@
     }
 
     function getWeatherByZip(zip) {
-      fetch(`https://api.weatherapi.com/v1/current.json?key=YOUR_API_KEY&q=${zip}`)
+      fetch(`https://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${zip}`)
         .then(res => res.json())
         .then(data => {
           document.getElementById('temperature').value = data.current.temp_f;
@@ -112,7 +149,7 @@
     }
 
     function fetchWeather(lat, lon) {
-      fetch(`https://api.weatherapi.com/v1/current.json?key=YOUR_API_KEY&q=${lat},${lon}`)
+      fetch(`https://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${lat},${lon}`)
         .then(res => res.json())
         .then(data => {
           document.getElementById('temperature').value = data.current.temp_f;
