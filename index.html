@@ -25,16 +25,21 @@
       box-shadow: 0 8px 30px rgba(0,0,0,0.1);
       position: relative;
     }
-    h2 {
-      text-align: center;
-      color: #002b45;
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1em;
       margin-bottom: 1em;
-      font-weight: 600;
     }
     .car-icon {
-      display: block;
-      margin: 0 auto 1em;
-      width: 60px;
+      width: 50px;
+      opacity: 0.9;
+    }
+    .title {
+      font-size: 1.5em;
+      font-weight: 600;
+      color: #002b45;
     }
     label {
       font-weight: 600;
@@ -99,6 +104,10 @@
       font-size: 1.2em;
       font-weight: bold;
       color: #007B00;
+      border: 2px dashed #cceccc;
+      padding: 1em;
+      background: #f4fff4;
+      border-radius: 10px;
     }
     .highlight {
       background: #e8fbe8;
@@ -112,12 +121,20 @@
       font-style: italic;
       display: none;
     }
+    #location-display {
+      text-align: center;
+      font-size: 0.95em;
+      color: #333;
+      margin-top: 0.5em;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <img src="https://cdn-icons-png.flaticon.com/512/744/744466.png" alt="Car icon" class="car-icon">
-    <h2>Safe Drive-Away Time Calculator</h2>
+    <div class="header">
+      <img src="https://cdn-icons-png.flaticon.com/512/744/744466.png" alt="Car icon" class="car-icon">
+      <div class="title">Safe Drive-Away Time Calculator</div>
+    </div>
 
     <label for="urethane">Urethane Product</label>
     <select id="urethane"></select>
@@ -128,6 +145,8 @@
       <button onclick="getWeather()">📍 Detect My Location</button>
       <button onclick="manualZipFetch()">✍️ Or Enter Manually</button>
     </div>
+
+    <div id="location-display"></div>
 
     <label for="temperature">Temperature (°F)</label>
     <input type="number" id="temperature" value="70">
@@ -145,32 +164,20 @@
   </div>
 
   <script>
-    const API_KEY = 'YOUR_FULL_WEATHERAPI_KEY_HERE';
+    const API_KEY = 'YOUR_ACTUAL_API_KEY_HERE';
+    const CSV_URL = 'https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/urethanes.csv';
     let urethaneData = {};
 
-    function loadUrethanesFromCSV(filePath) {
-      fetch(filePath)
-        .then(response => response.text())
-        .then(csv => {
-          const lines = csv.trim().split('\n');
-          const headers = lines[0].split(',');
-          lines.slice(1).forEach(line => {
-            const values = line.split(',');
-            const entry = {};
-            headers.forEach((h, i) => {
-              entry[h.trim()] = values[i].trim();
-            });
-            entry.baseSDAT = parseFloat(entry.baseSDAT);
-            entry.minTemp = parseFloat(entry.minTemp);
-            entry.minHumidity = parseFloat(entry.minHumidity);
-            urethaneData[entry.id] = entry;
-
-            const opt = document.createElement('option');
-            opt.value = entry.id;
-            opt.textContent = `${entry.name} (${entry.brand})`;
-            document.getElementById('urethane').appendChild(opt);
-          });
-        });
+    function populateUrethaneDropdown() {
+      const select = document.getElementById('urethane');
+      select.innerHTML = '';
+      Object.keys(urethaneData).forEach(key => {
+        const entry = urethaneData[key];
+        const opt = document.createElement('option');
+        opt.value = entry.id;
+        opt.textContent = `${entry.name} (${entry.brand})`;
+        select.appendChild(opt);
+      });
     }
 
     function calculateSDAT() {
@@ -181,11 +188,16 @@
       const temp = parseFloat(document.getElementById('temperature').value);
       const humidity = parseFloat(document.getElementById('humidity').value);
 
+      if (isNaN(temp) || isNaN(humidity)) {
+        document.getElementById('result').innerHTML = 'Please enter valid temperature and humidity values.';
+        return;
+      }
+
       let tempFactor = temp < product.minTemp ? 1 + 0.03 * (product.minTemp - temp) : 1;
       let humidityFactor = humidity < product.minHumidity ? 1 + 0.01 * (product.minHumidity - humidity) : 1;
       let adjustedSDAT = product.baseSDAT * tempFactor * humidityFactor;
 
-      document.getElementById('result').innerHTML = `Adjusted Safe Drive-Away Time for <strong>${product.name}</strong>: <strong>${adjustedSDAT.toFixed(1)} minutes</strong>`;
+      document.getElementById('result').innerHTML = `Adjusted Safe Drive-Away Time for <strong>${product.name}</strong>: <strong>${adjustedSDAT.toFixed(1)} minutes</strong><br><br><em>Always confirm SDAT with manufacturer documentation when conditions are below optimal.</em>`;
     }
 
     function getWeather() {
@@ -193,6 +205,8 @@
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(position => {
           fetchWeather(position.coords.latitude, position.coords.longitude);
+        }, () => {
+          document.getElementById('loading').style.display = 'none';
         });
       }
     }
@@ -211,6 +225,7 @@
         .then(data => {
           document.getElementById('temperature').value = data.current.temp_f;
           document.getElementById('humidity').value = data.current.humidity;
+          document.getElementById('location-display').textContent = `Location: ${data.location.name}, ${data.location.region}`;
           document.getElementById('loading').style.display = 'none';
         })
         .catch(() => {
@@ -224,6 +239,7 @@
         .then(data => {
           document.getElementById('temperature').value = data.current.temp_f;
           document.getElementById('humidity').value = data.current.humidity;
+          document.getElementById('location-display').textContent = `Location: ${data.location.name}, ${data.location.region}`;
           document.getElementById('loading').style.display = 'none';
         })
         .catch(() => {
@@ -231,8 +247,34 @@
         });
     }
 
+    function loadCSVData() {
+      fetch(CSV_URL)
+        .then(response => response.text())
+        .then(data => {
+          const lines = data.split('\n').filter(line => line.trim() !== '');
+          const headers = lines[0].split(',');
+          for (let i = 1; i < lines.length; i++) {
+            const values = lines[i].split(',');
+            const obj = {};
+            headers.forEach((h, idx) => {
+              obj[h.trim()] = values[idx].trim();
+            });
+            const id = obj.id || obj.name.toLowerCase().replace(/\s+/g, '-');
+            urethaneData[id] = {
+              id: id,
+              name: obj.name,
+              brand: obj.brand,
+              baseSDAT: parseFloat(obj.baseSDAT),
+              minTemp: parseFloat(obj.minTemp),
+              minHumidity: parseFloat(obj.minHumidity)
+            };
+          }
+          populateUrethaneDropdown();
+        });
+    }
+
     window.onload = () => {
-      loadUrethanesFromCSV('urethanes.csv');
+      loadCSVData();
     };
   </script>
 </body>
