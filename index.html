@@ -23,12 +23,18 @@
       padding: 2em;
       border-radius: 16px;
       box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+      position: relative;
     }
     h2 {
       text-align: center;
       color: #002b45;
-      margin-bottom: 2em;
+      margin-bottom: 1em;
       font-weight: 600;
+    }
+    .car-icon {
+      display: block;
+      margin: 0 auto 1em;
+      width: 60px;
     }
     label {
       font-weight: 600;
@@ -81,30 +87,17 @@
       text-align: center;
       color: #666;
       font-style: italic;
+      display: none;
     }
   </style>
 </head>
 <body>
   <div class="container">
+    <img src="https://cdn-icons-png.flaticon.com/512/744/744466.png" alt="Car icon" class="car-icon">
     <h2>Safe Drive-Away Time Calculator</h2>
 
     <label for="urethane">Urethane Product</label>
-    <select id="urethane">
-      <option value="ACE">BETASEAL ACE</option>
-      <option value="EXPRESS">BETASEAL Express APG</option>
-      <option value="XPRESS30">BETASEAL Xpress30</option>
-      <option value="EXPRESS_PLUS">BETASEAL Express+</option>
-      <option value="418HV">BETASEAL U-418HV</option>
-      <option value="418">BETASEAL U-418</option>
-      <option value="428HV">BETASEAL U-428+HV</option>
-      <option value="838HV">BETASEAL U-838HV</option>
-      <option value="ELITE">SIKATack Elite</option>
-      <option value="PRO">SIKATack Pro</option>
-      <option value="DRIVE">SIKATack Drive</option>
-      <option value="GO">SIKATack Go!</option>
-      <option value="P2G">Sikaflex P2G</option>
-      <option value="P2G_PLUS">Sikaflex P2G PLUS</option>
-    </select>
+    <select id="urethane"></select>
 
     <input type="text" id="zip" placeholder="Enter ZIP code (optional)">
 
@@ -124,46 +117,40 @@
   </div>
 
   <script>
-    const API_KEY = '58bade277f16f03ff8116e2028b39ad8';
+    const API_KEY = '54e2db91334c4bbda70193703240904';
+    let urethaneData = {};
 
-    const urethaneData = {
-      ACE: { baseSDAT: 30, minTemp: 0, minHumidity: 50 },
-      EXPRESS: { baseSDAT: 60, minTemp: 0, minHumidity: 50 },
-      XPRESS30: { baseSDAT: 30, minTemp: 0, minHumidity: 50 },
-      EXPRESS_PLUS: { baseSDAT: 60, minTemp: 0, minHumidity: 50 },
-      418HV: { baseSDAT: 120, minTemp: 40, minHumidity: 50 },
-      418: { baseSDAT: 480, minTemp: 70, minHumidity: 50 },
-      428HV: { baseSDAT: 240, minTemp: 32, minHumidity: 50 },
-      838HV: { baseSDAT: 240, minTemp: 32, minHumidity: 50 },
-      ELITE: { baseSDAT: 30, minTemp: 14, minHumidity: 50 },
-      PRO: { baseSDAT: 30, minTemp: 14, minHumidity: 50 },
-      DRIVE: { baseSDAT: 60, minTemp: 41, minHumidity: 50 },
-      GO: { baseSDAT: 120, minTemp: 41, minHumidity: 50 },
-      P2G: { baseSDAT: 360, minTemp: 41, minHumidity: 50 },
-      P2G_PLUS: { baseSDAT: 180, minTemp: 41, minHumidity: 50 }
-    };
-
-    window.onload = () => {
-      const zip = document.getElementById('zip').value;
-      document.getElementById('loading').style.display = 'block';
-      if (zip) {
-        getWeatherByZip(zip);
-      } else {
-        getWeather();
-      }
-    };
-
-    document.getElementById('zip').addEventListener('input', () => {
-      const zip = document.getElementById('zip').value;
-      if (zip.length >= 5) {
-        document.getElementById('loading').style.display = 'block';
-        getWeatherByZip(zip);
-      }
-    });
+    function loadUrethanesFromCSV(filePath) {
+      fetch(filePath)
+        .then(response => response.text())
+        .then(csv => {
+          const lines = csv.trim().split('\n');
+          const headers = lines[0].split(',');
+          lines.slice(1).forEach(line => {
+            const values = line.split(',');
+            const entry = {};
+            headers.forEach((h, i) => {
+              entry[h.trim()] = isNaN(values[i]) ? values[i].trim() : Number(values[i]);
+            });
+            urethaneData[entry.id] = {
+              name: entry.name,
+              baseSDAT: entry.baseSDAT,
+              minTemp: entry.minTemp,
+              minHumidity: entry.minHumidity
+            };
+            const opt = document.createElement('option');
+            opt.value = entry.id;
+            opt.textContent = entry.name;
+            document.getElementById('urethane').appendChild(opt);
+          });
+        });
+    }
 
     function calculateSDAT() {
       const selected = document.getElementById('urethane').value;
       const product = urethaneData[selected];
+      if (!product) return;
+
       const temp = parseFloat(document.getElementById('temperature').value);
       const humidity = parseFloat(document.getElementById('humidity').value);
 
@@ -171,7 +158,7 @@
       let humidityFactor = humidity < product.minHumidity ? 1 + 0.01 * (product.minHumidity - humidity) : 1;
       let adjustedSDAT = product.baseSDAT * tempFactor * humidityFactor;
 
-      document.getElementById('result').innerHTML = `Adjusted Safe Drive-Away Time: <strong>${adjustedSDAT.toFixed(1)} minutes</strong>`;
+      document.getElementById('result').innerHTML = `Adjusted Safe Drive-Away Time for <strong>${product.name}</strong>: <strong>${adjustedSDAT.toFixed(1)} minutes</strong>`;
     }
 
     function getWeather() {
@@ -179,8 +166,6 @@
         navigator.geolocation.getCurrentPosition(position => {
           fetchWeather(position.coords.latitude, position.coords.longitude);
         });
-      } else {
-        document.getElementById('loading').style.display = 'none';
       }
     }
 
@@ -193,7 +178,6 @@
           document.getElementById('loading').style.display = 'none';
         })
         .catch(() => {
-          alert("Failed to fetch weather for the ZIP code provided.");
           document.getElementById('loading').style.display = 'none';
         });
     }
@@ -207,10 +191,28 @@
           document.getElementById('loading').style.display = 'none';
         })
         .catch(() => {
-          alert("Failed to retrieve weather data.");
           document.getElementById('loading').style.display = 'none';
         });
     }
+
+    window.onload = () => {
+      document.getElementById('loading').style.display = 'block';
+      const zip = document.getElementById('zip').value;
+      if (zip && zip.length >= 5) {
+        getWeatherByZip(zip);
+      } else {
+        getWeather();
+      }
+      loadUrethanesFromCSV('urethanes.csv');
+    };
+
+    document.getElementById('zip').addEventListener('input', () => {
+      const zip = document.getElementById('zip').value;
+      if (zip.length >= 5) {
+        document.getElementById('loading').style.display = 'block';
+        getWeatherByZip(zip);
+      }
+    });
   </script>
 </body>
 </html>
