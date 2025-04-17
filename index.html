@@ -4,32 +4,65 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Auto Glass Urethane Drive-Away Time Calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    body { font-family: Arial, sans-serif; padding: 2em; background: #f4f7fa; }
-    .container { max-width: 600px; margin: auto; background: #fff; padding: 2em; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-    h2 { text-align: center; color: #002b45; margin-bottom: 1.5em; }
-    label { font-weight: bold; margin-top: 1em; }
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f4f7fa;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 600px;
+      width: 100%;
+      background: #fff;
+      padding: 2em;
+      border-radius: 16px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      color: #002b45;
+      margin-bottom: 2em;
+      font-weight: 600;
+    }
+    label {
+      font-weight: 600;
+      margin-top: 1em;
+      display: block;
+      margin-bottom: 0.5em;
+    }
     select, input[type="text"], input[type="number"] {
       width: 100%;
-      padding: 0.6em;
-      margin-top: 0.3em;
+      padding: 0.75em;
       border: 1px solid #ccc;
-      border-radius: 6px;
+      border-radius: 8px;
+      margin-bottom: 1em;
+      font-size: 1em;
     }
     button {
       margin-top: 1.5em;
       width: 100%;
       padding: 0.9em;
-      font-size: 1em;
+      font-size: 1.1em;
       background: #0073e6;
       color: #fff;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
       cursor: pointer;
-      transition: background 0.3s ease;
+      transition: background 0.3s ease, transform 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5em;
     }
     button:hover {
       background: #005bb5;
+      transform: translateY(-2px);
     }
     .result {
       margin-top: 2em;
@@ -43,6 +76,11 @@
       padding: 1em;
       border: 1px solid #b2deb2;
       border-radius: 8px;
+    }
+    .loading {
+      text-align: center;
+      color: #666;
+      font-style: italic;
     }
   </style>
 </head>
@@ -68,7 +106,7 @@
       <option value="P2G_PLUS">Sikaflex P2G PLUS</option>
     </select>
 
-    <input type="text" id="zip" placeholder="Enter ZIP code or leave blank for auto-location">
+    <input type="text" id="zip" placeholder="Enter ZIP code (optional)">
 
     <label for="temperature">Temperature (°F)</label>
     <input type="number" id="temperature" value="70">
@@ -76,8 +114,12 @@
     <label for="humidity">Humidity (%)</label>
     <input type="number" id="humidity" value="50">
 
-    <button onclick="calculateSDAT()">Calculate Drive-Away Time</button>
+    <button onclick="calculateSDAT()">
+      <span>Calculate Drive-Away Time</span>
+      <span>🧮</span>
+    </button>
 
+    <div class="loading" id="loading">Fetching weather...</div>
     <div class="result highlight" id="result"></div>
   </div>
 
@@ -89,10 +131,10 @@
       EXPRESS: { baseSDAT: 60, minTemp: 0, minHumidity: 50 },
       XPRESS30: { baseSDAT: 30, minTemp: 0, minHumidity: 50 },
       EXPRESS_PLUS: { baseSDAT: 60, minTemp: 0, minHumidity: 50 },
-      "418HV": { baseSDAT: 120, minTemp: 40, minHumidity: 50 },
-      "418": { baseSDAT: 480, minTemp: 70, minHumidity: 50 },
-      "428HV": { baseSDAT: 240, minTemp: 32, minHumidity: 50 },
-      "838HV": { baseSDAT: 240, minTemp: 32, minHumidity: 50 },
+      418HV: { baseSDAT: 120, minTemp: 40, minHumidity: 50 },
+      418: { baseSDAT: 480, minTemp: 70, minHumidity: 50 },
+      428HV: { baseSDAT: 240, minTemp: 32, minHumidity: 50 },
+      838HV: { baseSDAT: 240, minTemp: 32, minHumidity: 50 },
       ELITE: { baseSDAT: 30, minTemp: 14, minHumidity: 50 },
       PRO: { baseSDAT: 30, minTemp: 14, minHumidity: 50 },
       DRIVE: { baseSDAT: 60, minTemp: 41, minHumidity: 50 },
@@ -103,7 +145,8 @@
 
     window.onload = () => {
       const zip = document.getElementById('zip').value;
-      if (zip.length >= 5) {
+      document.getElementById('loading').style.display = 'block';
+      if (zip) {
         getWeatherByZip(zip);
       } else {
         getWeather();
@@ -113,6 +156,7 @@
     document.getElementById('zip').addEventListener('input', () => {
       const zip = document.getElementById('zip').value;
       if (zip.length >= 5) {
+        document.getElementById('loading').style.display = 'block';
         getWeatherByZip(zip);
       }
     });
@@ -135,6 +179,8 @@
         navigator.geolocation.getCurrentPosition(position => {
           fetchWeather(position.coords.latitude, position.coords.longitude);
         });
+      } else {
+        document.getElementById('loading').style.display = 'none';
       }
     }
 
@@ -144,8 +190,12 @@
         .then(data => {
           document.getElementById('temperature').value = data.current.temp_f;
           document.getElementById('humidity').value = data.current.humidity;
+          document.getElementById('loading').style.display = 'none';
         })
-        .catch(() => alert("Failed to fetch weather for the ZIP code provided."));
+        .catch(() => {
+          alert("Failed to fetch weather for the ZIP code provided.");
+          document.getElementById('loading').style.display = 'none';
+        });
     }
 
     function fetchWeather(lat, lon) {
@@ -154,8 +204,12 @@
         .then(data => {
           document.getElementById('temperature').value = data.current.temp_f;
           document.getElementById('humidity').value = data.current.humidity;
+          document.getElementById('loading').style.display = 'none';
         })
-        .catch(() => alert("Failed to retrieve weather data."));
+        .catch(() => {
+          alert("Failed to retrieve weather data.");
+          document.getElementById('loading').style.display = 'none';
+        });
     }
   </script>
 </body>
