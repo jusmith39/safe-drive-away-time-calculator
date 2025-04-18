@@ -152,10 +152,10 @@
     </div>
 
     <label for="temperature">Temperature (°F)</label>
-    <input type="number" id="temperature" value="">
+    <input type="number" id="temperature" value="70">
 
     <label for="humidity">Humidity (%)</label>
-    <input type="number" id="humidity" value="">
+    <input type="number" id="humidity" value="50">
 
     <button class="calculate" onclick="calculateSDAT()">
       <span>Calculate Drive-Away Time</span>
@@ -168,7 +168,7 @@
 
   <script>
     const API_KEY = '499d40f92d7c08dc39f7863e9d5e6b5b';
-    const CSV_URL = '/urethanes.csv';
+    const CSV_URL = location.origin + '/urethanes.csv';
     let urethaneData = {};
 
     function populateUrethaneDropdown() {
