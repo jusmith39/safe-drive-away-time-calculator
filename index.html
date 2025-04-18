@@ -152,10 +152,10 @@
     </div>
 
     <label for="temperature">Temperature (°F)</label>
-    <input type="number" id="temperature" value="70">
+    <input type="number" id="temperature" value="">
 
     <label for="humidity">Humidity (%)</label>
-    <input type="number" id="humidity" value="50">
+    <input type="number" id="humidity" value="">
 
     <button class="calculate" onclick="calculateSDAT()">
       <span>Calculate Drive-Away Time</span>
@@ -167,8 +167,8 @@
   </div>
 
   <script>
-    const API_KEY = '35f42ebf2787489f8e1202649241704';
-    const CSV_URL = './urethanes.csv';
+    const API_KEY = '499d40f92d7c08dc39f7863e9d5e6b5b';
+    const CSV_URL = '/urethanes.csv';
     let urethaneData = {};
 
     function populateUrethaneDropdown() {
@@ -209,7 +209,8 @@
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(pos => {
           fetchWeather(pos.coords.latitude, pos.coords.longitude);
-        }, () => {
+        }, err => {
+          document.getElementById('location-weather').textContent = 'Unable to retrieve location.';
           document.getElementById('loading').style.display = 'none';
         });
       }
@@ -223,6 +224,7 @@
           .then(res => res.json())
           .then(data => updateWeatherUI(data))
           .catch(() => {
+            document.getElementById('location-weather').textContent = 'Weather data unavailable.';
             document.getElementById('loading').style.display = 'none';
           });
       }
@@ -233,14 +235,19 @@
         .then(res => res.json())
         .then(data => updateWeatherUI(data))
         .catch(() => {
+          document.getElementById('location-weather').textContent = 'Weather data unavailable.';
           document.getElementById('loading').style.display = 'none';
         });
     }
 
     function updateWeatherUI(data) {
-      document.getElementById('temperature').value = data.main.temp;
-      document.getElementById('humidity').value = data.main.humidity;
-      document.getElementById('location-weather').textContent = `Today's conditions in ${data.name}: ${data.main.temp}°F, ${data.main.humidity}% humidity`;
+      if (data && data.main) {
+        document.getElementById('temperature').value = data.main.temp;
+        document.getElementById('humidity').value = data.main.humidity;
+        document.getElementById('location-weather').textContent = `Today's conditions in ${data.name}: ${data.main.temp}°F, ${data.main.humidity}% humidity`;
+      } else {
+        document.getElementById('location-weather').textContent = 'Weather data not available.';
+      }
       document.getElementById('loading').style.display = 'none';
     }
 
@@ -248,7 +255,7 @@
       fetch(CSV_URL)
         .then(response => response.text())
         .then(data => {
-          const lines = data.split('\n').filter(line => line.trim() !== '');
+          const lines = data.split('\n').filter(line => line.trim() !== '' && !line.startsWith('#'));
           const headers = lines[0].split(',');
           for (let i = 1; i < lines.length; i++) {
             const values = lines[i].split(',');
