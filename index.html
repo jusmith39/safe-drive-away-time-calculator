@@ -30,7 +30,7 @@
       align-items: center;
       justify-content: center;
       gap: 1em;
-      margin-bottom: 1em;
+      margin-bottom: 0.5em;
     }
     .car-icon {
       width: 50px;
@@ -42,6 +42,13 @@
       color: #002b45;
       text-transform: uppercase;
       letter-spacing: 1px;
+    }
+    #location-weather {
+      text-align: center;
+      margin-top: 0.3em;
+      font-size: 0.95em;
+      color: #444;
+      font-style: italic;
     }
     label {
       font-weight: 600;
@@ -123,12 +130,6 @@
       font-style: italic;
       display: none;
     }
-    #location-display {
-      text-align: center;
-      font-size: 0.95em;
-      color: #333;
-      margin-top: 0.5em;
-    }
   </style>
 </head>
 <body>
@@ -137,6 +138,8 @@
       <img src="https://cdn-icons-png.flaticon.com/512/744/744466.png" alt="Car icon" class="car-icon">
       <div class="title">Safe Drive-Away Time Calculator</div>
     </div>
+
+    <div id="location-weather"></div>
 
     <label for="urethane">Urethane Product</label>
     <select id="urethane"></select>
@@ -147,8 +150,6 @@
       <button onclick="getWeather()">📍 Detect My Location</button>
       <button onclick="manualZipFetch()">✍️ Or Enter Manually</button>
     </div>
-
-    <div id="location-display"></div>
 
     <label for="temperature">Temperature (°F)</label>
     <input type="number" id="temperature" value="70">
@@ -195,18 +196,19 @@
         return;
       }
 
-      let tempFactor = temp < product.minTemp ? 1 + 0.03 * (product.minTemp - temp) : 1;
-      let humidityFactor = humidity < product.minHumidity ? 1 + 0.01 * (product.minHumidity - humidity) : 1;
-      let adjustedSDAT = product.baseSDAT * tempFactor * humidityFactor;
+      const base = product.baseSDAT;
+      const tempFactor = temp < product.minTemp ? 1 + 0.03 * (product.minTemp - temp) : 1;
+      const humidityFactor = humidity < product.minHumidity ? 1 + 0.01 * (product.minHumidity - humidity) : 1;
+      const adjusted = base * tempFactor * humidityFactor;
 
-      document.getElementById('result').innerHTML = `Adjusted Safe Drive-Away Time for <strong>${product.name}</strong>: <strong>${adjustedSDAT.toFixed(1)} minutes</strong><br><br><em>Always confirm SDAT with manufacturer documentation when conditions are below optimal.</em>`;
+      document.getElementById('result').innerHTML = `Adjusted Safe Drive-Away Time for <strong>${product.name}</strong>: <strong>${adjusted.toFixed(1)} minutes</strong><br><br><em>Always confirm SDAT with manufacturer documentation when conditions are below optimal.</em>`;
     }
 
     function getWeather() {
       document.getElementById('loading').style.display = 'block';
       if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(position => {
-          fetchWeather(position.coords.latitude, position.coords.longitude);
+        navigator.geolocation.getCurrentPosition(pos => {
+          fetchWeather(pos.coords.latitude, pos.coords.longitude);
         }, () => {
           document.getElementById('loading').style.display = 'none';
         });
@@ -217,36 +219,29 @@
       const zip = document.getElementById('zip').value;
       if (zip.length >= 5) {
         document.getElementById('loading').style.display = 'block';
-        getWeatherByZip(zip);
+        fetch(`https://api.openweathermap.org/data/2.5/weather?zip=${zip},US&appid=${API_KEY}&units=imperial`)
+          .then(res => res.json())
+          .then(data => updateWeatherUI(data))
+          .catch(() => {
+            document.getElementById('loading').style.display = 'none';
+          });
       }
-    }
-
-    function getWeatherByZip(zip) {
-      fetch(`https://api.openweathermap.org/data/2.5/weather?zip=${zip},US&appid=${API_KEY}&units=imperial`)
-        .then(res => res.json())
-        .then(data => {
-          document.getElementById('temperature').value = data.main.temp;
-          document.getElementById('humidity').value = data.main.humidity;
-          document.getElementById('location-display').textContent = `Location: ${data.name}`;
-          document.getElementById('loading').style.display = 'none';
-        })
-        .catch(() => {
-          document.getElementById('loading').style.display = 'none';
-        });
     }
 
     function fetchWeather(lat, lon) {
       fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=imperial`)
         .then(res => res.json())
-        .then(data => {
-          document.getElementById('temperature').value = data.main.temp;
-          document.getElementById('humidity').value = data.main.humidity;
-          document.getElementById('location-display').textContent = `Location: ${data.name}`;
-          document.getElementById('loading').style.display = 'none';
-        })
+        .then(data => updateWeatherUI(data))
         .catch(() => {
           document.getElementById('loading').style.display = 'none';
         });
+    }
+
+    function updateWeatherUI(data) {
+      document.getElementById('temperature').value = data.main.temp;
+      document.getElementById('humidity').value = data.main.humidity;
+      document.getElementById('location-weather').textContent = `Today's conditions in ${data.name}: ${data.main.temp}°F, ${data.main.humidity}% humidity`;
+      document.getElementById('loading').style.display = 'none';
     }
 
     function loadCSVData() {
