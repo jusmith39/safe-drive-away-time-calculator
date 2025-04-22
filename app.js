@@ -1,46 +1,106 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Auto Glass Urethane Drive-Away Time Calculator</title>
-  <link href="styles.css" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
-</head>
-<body>
-  <div class="container">
-    <div class="header">
-      <img src="https://cdn-icons-png.flaticon.com/512/744/744466.png" alt="Car icon" class="car-icon" />
-      <div class="title">Safe Drive-Away Time Calculator</div>
-    </div>
+const urethaneData = [];
 
-    <div id="location-weather">Fetching location and weather...</div>
+async function loadUrethanes() {
+  try {
+    const response = await fetch("urethanes.csv");
+    const text = await response.text();
+    const lines = text.split("\n").slice(1); // Skip header
+    lines.forEach((line) => {
+      const [name, baseTime, conditionNote] = line.split(",");
+      if (name && baseTime) {
+        urethaneData.push({
+          name: name.trim(),
+          baseTime: parseFloat(baseTime.trim()),
+          note: conditionNote?.trim() || "",
+        });
+      }
+    });
+    const dropdown = document.getElementById("urethane");
+    urethaneData.forEach((u) => {
+      const option = document.createElement("option");
+      option.value = u.name;
+      option.textContent = u.name;
+      dropdown.appendChild(option);
+    });
+  } catch (error) {
+    console.error("Failed to load urethanes:", error);
+  }
+}
 
-    <label for="urethane">Urethane Product</label>
-    <select id="urethane"></select>
+function showWeatherInfo(location, temp, humidity) {
+  const display = document.getElementById("location-weather");
+  display.textContent = `Today's conditions in ${location}: ${temp}°F, ${humidity}% humidity.`;
+}
 
-    <input type="text" id="zip" placeholder="Enter ZIP code (optional)" />
+async function getWeather() {
+  if (!navigator.geolocation) return;
+  document.getElementById("loading").style.display = "block";
+  navigator.geolocation.getCurrentPosition(async (position) => {
+    try {
+      const { latitude, longitude } = position.coords;
+      const apiKey = "07fe3e96b8e84a1d6aa20c002a2a3b3f";
+      const apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apiKey}&units=imperial`;
+      const res = await fetch(apiUrl);
+      const data = await res.json();
+      if (data?.main) {
+        document.getElementById("temperature").value = data.main.temp;
+        document.getElementById("humidity").value = data.main.humidity;
+        showWeatherInfo(data.name, data.main.temp, data.main.humidity);
+      }
+    } catch (error) {
+      console.error("Error fetching weather:", error);
+    } finally {
+      document.getElementById("loading").style.display = "none";
+    }
+  });
+}
 
-    <div class="button-row">
-      <button id="detect-location">📍 Detect My Location</button>
-      <button id="manual-zip">✍️ Or Enter Manually</button>
-    </div>
+async function manualZipFetch() {
+  const zip = document.getElementById("zip").value.trim();
+  if (!zip) return;
+  document.getElementById("loading").style.display = "block";
+  try {
+    const apiKey = "07fe3e96b8e84a1d6aa20c002a2a3b3f";
+    const apiUrl = `https://api.openweathermap.org/data/2.5/weather?zip=${zip},us&appid=${apiKey}&units=imperial`;
+    const res = await fetch(apiUrl);
+    const data = await res.json();
+    if (data?.main) {
+      document.getElementById("temperature").value = data.main.temp;
+      document.getElementById("humidity").value = data.main.humidity;
+      showWeatherInfo(data.name, data.main.temp, data.main.humidity);
+    }
+  } catch (error) {
+    console.error("Error fetching weather:", error);
+  } finally {
+    document.getElementById("loading").style.display = "none";
+  }
+}
 
-    <label for="temperature">Temperature (°F)</label>
-    <input type="number" id="temperature" value="70" />
+function calculateSDAT() {
+  const dropdown = document.getElementById("urethane");
+  const selected = dropdown.value;
+  const temperature = parseFloat(document.getElementById("temperature").value);
+  const humidity = parseFloat(document.getElementById("humidity").value);
+  const urethane = urethaneData.find((u) => u.name === selected);
 
-    <label for="humidity">Humidity (%)</label>
-    <input type="number" id="humidity" value="50" />
+  if (!urethane || isNaN(temperature) || isNaN(humidity)) {
+    document.getElementById("result").textContent = "Please select a urethane and ensure weather data is available.";
+    return;
+  }
 
-    <button class="calculate" id="calculate">
-      <span>Calculate Drive-Away Time</span>
-      <span>🧮</span>
-    </button>
+  let adjusted = urethane.baseTime;
 
-    <div class="loading" id="loading">Fetching weather...</div>
-    <div class="result" id="result"></div>
-  </div>
+  // Adjust SDAT based on basic weather conditions (can be expanded per product)
+  if (temperature < 40) adjusted += 30;
+  if (humidity > 80) adjusted += 15;
 
-  <script src="app.js"></script>
-</body>
-</html>
+  document.getElementById("result").textContent = `Adjusted Safe Drive-Away Time for ${urethane.name}: ${adjusted} minutes\n${urethane.note}`;
+}
+
+window.onload = () => {
+  loadUrethanes();
+  getWeather();
+  document.getElementById("detect-location").addEventListener("click", getWeather);
+  document.getElementById("manual-zip").addEventListener("click", manualZipFetch);
+  document.getElementById("calculate").addEventListener("click", calculateSDAT);
+};
