@@ -2,45 +2,38 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Auto Glass Urethane Drive-Away Time Calculator</title>
-  <link href="styles.css" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Safe Drive-Away Time Calculator</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
-    <div class="header">
-      <img src="https://cdn-icons-png.flaticon.com/512/744/744466.png" alt="Car icon" class="car-icon" />
-      <div class="title">Safe Drive-Away Time Calculator</div>
-    </div>
+    <h1>🚌 Safe Drive-Away Time Calculator</h1>
+    
+    <p id="location-weather">Fetching location and weather...</p>
 
-    <div id="location-weather">Fetching location and weather...</div>
-
-    <label for="urethane">Urethane Product</label>
+    <label>Urethane Product</label>
     <select id="urethane"></select>
 
     <input type="text" id="zip" placeholder="Enter ZIP code (optional)" />
 
-    <div class="button-row">
-      <button onclick="getWeather()">📍 Detect My Location</button>
-      <button onclick="manualZipFetch()">✍️ Or Enter Manually</button>
+    <div class="buttons">
+      <button id="detect-location">📍 Detect My Location</button>
+      <button id="manual-zip">✍️ Or Enter Manually</button>
     </div>
 
-    <label for="temperature">Temperature (°F)</label>
-    <input type="number" id="temperature" value="70" />
+    <label>Temperature (°F)</label>
+    <input type="number" id="temperature" />
 
-    <label for="humidity">Humidity (%)</label>
-    <input type="number" id="humidity" value="50" />
+    <label>Humidity (%)</label>
+    <input type="number" id="humidity" />
 
-    <button class="calculate" onclick="calculateSDAT()">
-      <span>Calculate Drive-Away Time</span>
-      <span>🧮</span>
-    </button>
+    <button id="calculate">Calculate Drive-Away Time 🧮</button>
 
-    <div class="loading" id="loading">Fetching weather...</div>
-    <div class="result" id="result"></div>
+    <div id="result"></div>
+    <div id="loading" style="display: none;">Loading weather...</div>
   </div>
 
-  <script src="app.js"></script>
+  <script src="App.js"></script>
 </body>
 </html>
