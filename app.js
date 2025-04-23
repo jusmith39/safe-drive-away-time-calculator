@@ -6,12 +6,15 @@ async function loadUrethanes() {
     const text = await response.text();
     const lines = text.split("\n").slice(1); // Skip header
     lines.forEach((line) => {
-      const [name, baseTime, conditionNote] = line.split(",");
-      if (name && baseTime) {
+      const [id, name, brand, type, recommendedTime, notes, price] = line.split(",");
+      if (name && recommendedTime) {
         urethaneData.push({
           name: name.trim(),
-          baseTime: parseFloat(baseTime.trim()),
-          note: conditionNote?.trim() || "",
+          brand: brand.trim(),
+          type: type.trim(),
+          recommendedTime: recommendedTime.trim(),
+          note: notes?.trim() || "",
+          price: price?.trim(),
         });
       }
     });
@@ -19,7 +22,7 @@ async function loadUrethanes() {
     urethaneData.forEach((u) => {
       const option = document.createElement("option");
       option.value = u.name;
-      option.textContent = u.name;
+      option.textContent = `${u.name} (${u.recommendedTime})`;
       dropdown.appendChild(option);
     });
   } catch (error) {
@@ -88,13 +91,21 @@ function calculateSDAT() {
     return;
   }
 
-  let adjusted = urethane.baseTime;
+  let resultText = `🧪 ${urethane.name} (${urethane.type}) by ${urethane.brand}\nRecommended Drive-Away Time: ${urethane.recommendedTime}`;
 
-  // Adjust SDAT based on basic weather conditions (can be expanded per product)
-  if (temperature < 40) adjusted += 30;
-  if (humidity > 80) adjusted += 15;
+  if (temperature < 40) {
+    resultText += `\n⚠️ Cold weather detected. May require additional cure time.`;
+  }
 
-  document.getElementById("result").textContent = `Adjusted Safe Drive-Away Time for ${urethane.name}: ${adjusted} minutes\n${urethane.note}`;
+  if (humidity > 80) {
+    resultText += `\n⚠️ High humidity may affect cure performance.`;
+  }
+
+  if (urethane.note) {
+    resultText += `\n📌 Note: ${urethane.note}`;
+  }
+
+  document.getElementById("result").textContent = resultText;
 }
 
 window.onload = () => {
