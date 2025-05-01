@@ -28,11 +28,25 @@
       <button onclick="getWeatherByZip()" class="mt-2 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Submit ZIP</button>
     </div>
 
+    <div id="locationDisplay" class="text-sm text-gray-700 mb-4 hidden"></div>
+
+    <div id="weatherBox" class="grid grid-cols-2 gap-4 mb-6 hidden">
+      <div class="bg-blue-100 text-blue-900 rounded-lg p-4">
+        <h3 class="text-sm font-semibold">Temperature</h3>
+        <p id="tempDisplay" class="text-xl font-bold"></p>
+      </div>
+      <div class="bg-yellow-100 text-yellow-900 rounded-lg p-4">
+        <h3 class="text-sm font-semibold">Humidity</h3>
+        <p id="humidityDisplay" class="text-xl font-bold"></p>
+      </div>
+    </div>
+
     <div id="result" class="mt-6 hidden">
       <h2 class="text-xl font-semibold mb-2">Drive-Away Time</h2>
-      <p id="driveAwayTime" class="text-lg"></p>
-      <p id="notes" class="text-sm text-gray-600 mt-1"></p>
-      <p id="weather" class="text-sm text-gray-500 mt-3"></p>
+      <div class="bg-green-100 text-green-900 rounded-lg p-4">
+        <p id="driveAwayTime" class="text-2xl font-bold"></p>
+        <p id="notes" class="text-sm mt-1"></p>
+      </div>
     </div>
   </div>
 
@@ -77,7 +91,9 @@
         .then(res => res.json())
         .then(data => {
           const { temp, humidity } = data.main;
-          showResult(temp, humidity);
+          const { name } = data;
+          displayLocation(name);
+          displayWeather(temp, humidity);
         })
         .catch(() => alert('Invalid ZIP or API error'));
     }
@@ -87,8 +103,27 @@
         .then(res => res.json())
         .then(data => {
           const { temp, humidity } = data.main;
-          showResult(temp, humidity);
+          const { name } = data;
+          displayLocation(name);
+          displayWeather(temp, humidity);
         });
+    }
+
+    function displayLocation(city) {
+      const locationDiv = document.getElementById('locationDisplay');
+      locationDiv.textContent = `Location: ${city}`;
+      locationDiv.classList.remove('hidden');
+    }
+
+    function displayWeather(temp, humidity) {
+      document.getElementById('tempDisplay').textContent = `${temp}°F`;
+      document.getElementById('humidityDisplay').textContent = `${humidity}%`;
+      document.getElementById('weatherBox').classList.remove('hidden');
+
+      const selectedIndex = document.getElementById('urethaneSelect').value;
+      if (selectedIndex !== '') {
+        showResult(temp, humidity);
+      }
     }
 
     function showResult(temp, humidity) {
@@ -98,7 +133,6 @@
       const selected = urethanes[selectedIndex];
       document.getElementById('driveAwayTime').textContent = `${selected.recommended_drive_away_time} (baseline)`;
       document.getElementById('notes').textContent = selected.notes || '';
-      document.getElementById('weather').textContent = `Current Temp: ${temp}°F | Humidity: ${humidity}%`;
       document.getElementById('result').classList.remove('hidden');
     }
   </script>
