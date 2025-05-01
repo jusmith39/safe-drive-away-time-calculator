@@ -48,6 +48,10 @@
         <p id="notes" class="text-sm mt-2 text-center"></p>
       </div>
     </div>
+
+    <p class="text-xs text-gray-500 mt-8 text-center border-t pt-4">
+      ⚠️ Important Note: This is not a replacement for manufacturer-published values. It's a tool for field estimation and should be used only when weather is significantly different from the standard.
+    </p>
   </div>
 
   <script>
@@ -131,7 +135,28 @@
       if (selectedIndex === '') return alert('Select a urethane');
 
       const selected = urethanes[selectedIndex];
-      document.getElementById('driveAwayTime').textContent = `${selected.recommended_drive_away_time} (baseline)`;
+      let adjustedTime = parseInt(selected.recommended_drive_away_time);
+
+      const tempLow = parseFloat(selected.temp_threshold_low);
+      const tempHigh = parseFloat(selected.temp_threshold_high);
+      const humLow = parseFloat(selected.humidity_threshold_low);
+      const humHigh = parseFloat(selected.humidity_threshold_high);
+
+      if (temp < tempLow) {
+        adjustedTime += (tempLow - temp) * 1.5;
+      } else if (temp > tempHigh) {
+        adjustedTime -= (temp - tempHigh) * 0.5;
+      }
+
+      if (humidity > humHigh) {
+        adjustedTime -= 10;
+      } else if (humidity < humLow) {
+        adjustedTime += 10;
+      }
+
+      adjustedTime = Math.max(adjustedTime, 20);
+
+      document.getElementById('driveAwayTime').textContent = `${Math.round(adjustedTime)} minutes`;
       document.getElementById('notes').textContent = selected.notes || '';
       document.getElementById('result').classList.remove('hidden');
     }
