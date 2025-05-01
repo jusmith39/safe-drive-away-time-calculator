@@ -1,29 +1,28 @@
-name,brand,type,recommended_drive_away_time,notes,price_usd
-SikaTack Ultrafast II,Sika,Accelerated Cure,30,Ultra-fast curing; ideal for fleet applications,
-SikaTack ULTIMATE,Sika,Primerless Adhesive,60,Primerless polyurethane adhesive with OEM approvals,
-SikaTack PRO,Sika,Premium Adhesive,60,Premium performance with enhanced weather resistance,
-SikaTack Plus,Sika,All-Weather,90,Used in colder climates,19.75
-SikaTack MOVE,Sika,All-in-One Solution,60,Designed for bus,
-SikaTack MACH-30 XV,Sika,Accelerated Cure,30,Rapid curing adhesive for automotive glass replacement,24.6
-SikaTack MACH 60,Sika,Accelerated Cure,60,OEM-approved with excellent performance,25
-SikaTack MACH 60,Sika,Accelerated Cure,60,Fast curing; suitable for quick installations,23.95
-SikaTack GO!,Sika,Primerless Adhesive,60,User-friendly and easy-to-apply for everyday use,
-SikaTack Elite,Sika,Accelerated Cure,30,1-hour minimum safe drive-away time,22.5
-SikaTack ELITE,Sika,Accelerated Cure,30,Designed for use with Sika PowerCure – high-speed performance in various climates,21.25
-Sikaflex-295 UV,Sika,Exterior Sealant,60,UV resistant; suitable for bonding organic glass in marine and specialty vehicles,33
-Sikaflex-268 PowerCure,Sika,Accelerated Assembly,60,PowerCure system for rapid assembly/glazing in specialty vehicles,31
-Sikaflex-255 FC,Sika,Fast Curing Adhesive,60,OEM approved; no odor formula,30
-Sikaflex-227,Sika,Fast Skinning Sealant,60,Ideal for vehicle body sealing; not typically used for windshield bonding,32
-Sikaflex-220+,Sika,Fast Curing Adhesive,60,Fast curing urethane adhesive with good application properties,35
-Sikaflex P2G PLUS,Sika,Primerless Adhesive,60,Enhanced version of P2G with better sag resistance,
-Sikaflex P2G,Sika,Primerless Adhesive,60,Primerless and commonly used in aftermarket applications,
-Essex U-400HV,Essex/PPG,High Viscosity,120,Slower set for complex installs,28
-Betaseal 428,Dow DuPont,Primerless to glass,60,Standard warm-weather adhesive,coach
-Betaseal Express,Dow DuPont,Accelerated Cure,30,Fast-cure version for mobile installs,34
-Betaseal U-418,Dow DuPont,High-Modulus,120,Cold-weather compatible formula,27
-Dinitrol 500,Dinitrol,Standard Cure,90,Moisture-cure urethane,29
-Dinitrol 910,Dinitrol,Accelerated Cure,30,High humidity shortens working time,26
-CRL-U418,CR Laurence,High-Modulus,120,Approved for use in luxury vehicles,30
-CRL-CF60,CR Laurence,Cold-Weather,60,Suitable for temps down to 10°F,25
-3M 08693,3M,Single Component,120,OEM replacement compatible,38
-3M 08690,3M,Fast Cure,60,30 min safe drive-away with dual airbags,36
+name,brand,type,recommended_drive_away_time,notes,price_usd,temp_threshold_high,temp_threshold_low,humidity_threshold_high,humidity_threshold_low
+SikaTack Ultrafast II,Sika,Accelerated Cure,60,Hot applied - All in one modulous - Non conductiveUltra-fast curing; ideal for fleet applications,,95,14,99,0
+SikaTack PRO,Sika,Premium Adhesive,30,Premium performance with enhanced weather resistance,,95,14,99,0
+SikaTack Plus,Sika,All-Weather,90,Used in colder climates,19.75,,,,
+SikaTack MOVE,Sika,All-in-One Solution,60,Designed for bus,,,,,
+SikaTack MACH-30,Sika,Accelerated Cure,30,Cold Applied - All in one modulous non-conductive,24.6,95,14,99,40
+SikaTack MACH 60,Sika,Accelerated Cure,60,"Cold Applied - All in one, modulos and non conductive. Fast curing; suitable for quick installations",23.95,95,0,99,0
+SikaTack GO!,Sika,Primerless Adhesive,60,User-friendly and easy-to-apply for everyday use,,95,40,99,0
+SikaTack® DRIVE,Sika,,60,Easy to use with battery powered gun,,95,40,99,0
+SikaTack ELITE,Sika,Accelerated Cure,30,Designed for use with Sika PowerCure – high-speed performance in various climates,21.25,95,14,99,0
+Sikaflex-295 UV,Sika,Exterior Sealant,60,UV resistant; suitable for bonding organic glass in marine and specialty vehicles,33,,,,
+Sikaflex-268 PowerCure,Sika,Accelerated Assembly,60,PowerCure system for rapid assembly/glazing in specialty vehicles,31,,,,
+Sikaflex-255 FC,Sika,Fast Curing Adhesive,60,OEM approved; no odor formula,30,,,,
+Sikaflex ASAP+,Sika,Hot Applied,30,Hot applied,,95,14,99,0
+Sikaflex-220+,Sika,Fast Curing Adhesive,480,Cold applied - not recommended for temperatures below 25F or low humidity,35,95,72,99,40
+Sikaflex P2G PLUS,Sika,Primerless Adhesive,180,"Cold applied, Primerless - Enhanced version of P2G with better sag resistance",,95,40,95,0
+Sikaflex P2G,Sika,Primerless Adhesive,360,Primerless and commonly used in aftermarket applications,,95,40,85,0
+Essex U-400HV,Essex/PPG,High Viscosity,120,Slower set for complex installs,28,,,,
+Betaseal 428,Dow DuPont,Primerless to glass,60,Standard warm-weather adhesive,coach,,,,
+Betaseal Xpress30,Dow DuPont,Accelerated Cure,30,Advanced cure adhesive,34,95,0,,
+Betaseal Express APG,Dow DuPont,Accelerated Cure,60,Advanced Primerless to Glass) - Advanced cure adhesive,34,95,0,,
+Betaseal U-418,Dow DuPont,High-Modulus,120,Cold-weather compatible formula,27,,,,
+Dinitrol 500,Dinitrol,Standard Cure,90,Moisture-cure urethane,29,,,,
+Dinitrol 910,Dinitrol,Accelerated Cure,30,High humidity shortens working time,26,,,,
+CRL-U418,CR Laurence,High-Modulus,120,Approved for use in luxury vehicles,30,,,,
+CRL-CF60,CR Laurence,Cold-Weather,60,Suitable for temps down to 10°F,25,,,,
+3M 08693,3M,Single Component,120,OEM replacement compatible,38,,,,
+3M 08690,3M,Fast Cure,60,30 min safe drive-away with dual airbags,36,,,,
