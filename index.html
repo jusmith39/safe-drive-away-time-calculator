@@ -47,6 +47,10 @@
       </div>
     </div>
 
+    <div class="text-center mb-6">
+      <button id="calculateBtn" onclick="calculateSDAT()" class="bg-purple-600 text-white px-6 py-3 rounded-lg shadow hover:bg-purple-700">Calculate Minimum Drive-Away Time</button>
+    </div>
+
     <div id="result" class="mt-6 hidden">
       <h2 class="text-xl font-semibold mb-2 text-gray-700">Drive-Away Time</h2>
       <div class="bg-green-200 text-green-900 rounded-xl p-6 shadow-lg border-2 border-green-400">
@@ -63,8 +67,9 @@
   <script>
     const apiKey = '58bade277f16f03ff8116e2028b39ad8';
     let urethanes = [];
+    let currentTemp = null;
+    let currentHumidity = null;
 
-    // Load CSV
     fetch('urethanes.csv')
       .then(response => response.text())
       .then(csv => {
@@ -126,17 +131,19 @@
     }
 
     function displayWeather(temp, humidity) {
+      currentTemp = temp;
+      currentHumidity = humidity;
       document.getElementById('tempDisplay').textContent = `${temp}°F`;
       document.getElementById('humidityDisplay').textContent = `${humidity}%`;
       document.getElementById('weatherBox').classList.remove('hidden');
-
-      const selectedIndex = document.getElementById('urethaneSelect').value;
-      if (selectedIndex !== '') {
-        showResult(temp, humidity);
-      }
     }
 
-    function showResult(temp, humidity) {
+    function calculateSDAT() {
+      if (currentTemp === null || currentHumidity === null) {
+        alert('Please fetch weather data first using location or ZIP.');
+        return;
+      }
+
       const selectedIndex = document.getElementById('urethaneSelect').value;
       if (selectedIndex === '') return alert('Select a urethane');
 
@@ -148,15 +155,15 @@
       const humLow = parseFloat(selected.humidity_threshold_low);
       const humHigh = parseFloat(selected.humidity_threshold_high);
 
-      if (temp < tempLow) {
-        adjustedTime += (tempLow - temp) * 1.5;
-      } else if (temp > tempHigh) {
-        adjustedTime -= (temp - tempHigh) * 0.5;
+      if (currentTemp < tempLow) {
+        adjustedTime += (tempLow - currentTemp) * 1.5;
+      } else if (currentTemp > tempHigh) {
+        adjustedTime -= (currentTemp - tempHigh) * 0.5;
       }
 
-      if (humidity > humHigh) {
+      if (currentHumidity > humHigh) {
         adjustedTime -= 10;
-      } else if (humidity < humLow) {
+      } else if (currentHumidity < humLow) {
         adjustedTime += 10;
       }
 
