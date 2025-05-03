@@ -27,6 +27,19 @@
       <div id="urethaneTooltip" class="mt-2 p-3 bg-gray-100 border rounded shadow hidden text-sm text-gray-700"></div>
     </div>
 
+    <!-- New checkboxes -->
+    <div class="mb-4 space-y-2">
+      <label class="inline-flex items-center">
+        <input type="checkbox" id="largeVehicle" class="form-checkbox h-5 w-5 text-blue-600" />
+        <span class="ml-2 text-sm text-gray-700">Large Vehicle (RV, Truck, Bus)</span>
+      </label>
+      <br />
+      <label class="inline-flex items-center">
+        <input type="checkbox" id="passengerAirbags" class="form-checkbox h-5 w-5 text-blue-600" />
+        <span class="ml-2 text-sm text-gray-700">Passenger Airbags</span>
+      </label>
+    </div>
+
     <div class="mb-4">
       <button onclick="getLocation()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Use My Location</button>
       <p class="text-sm text-gray-500 mt-2">Or enter ZIP code:</p>
@@ -60,7 +73,7 @@
     </div>
 
     <p class="text-xs text-gray-500 mt-8 text-center border-t pt-4">
-      ⚠️ Important Note: This is not a replacement for the manufacture´s guidelines. It's a tool for auto glass technicians and should be used at the discression of the user.
+      ⚠️ Important Note: This is not a replacement for manufacturer-published values. It's a tool for field estimation and should be used only when weather is significantly different from the standard.
     </p>
   </div>
 
@@ -166,6 +179,12 @@
       } else if (currentHumidity < humLow) {
         adjustedTime += 10;
       }
+
+      // Apply checkbox multipliers
+      const largeVehicle = document.getElementById('largeVehicle').checked;
+      const passengerAirbags = document.getElementById('passengerAirbags').checked;
+      if (largeVehicle) adjustedTime *= 1.15;
+      if (passengerAirbags) adjustedTime *= 1.1;
 
       adjustedTime = Math.max(adjustedTime, 20);
 
